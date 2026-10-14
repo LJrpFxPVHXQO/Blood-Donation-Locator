@@ -589,7 +589,8 @@ select {
 
 .help-shell {
   min-height: 100vh;
-  background: #ead8cc;
+  background: #fce4ec;
+;
 }
 
 .help-shell .section-nav {
