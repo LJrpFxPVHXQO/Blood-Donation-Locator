@@ -8,7 +8,7 @@ const questions = [
   'Do you need proper sleep before donating?',
 ];
 
-export default function Help() {
+export default function Help({ onNavigate }) {
   const [openQuestions, setOpenQuestions] = useState([]);
 
   const toggleQuestion = (index) => {
@@ -48,6 +48,9 @@ export default function Help() {
           );
         })}
       </div>
+      <button className="survey-submit help-survey-link" type="button" onClick={() => onNavigate('survey')}>
+        Take the blood donation survey
+      </button>
     </section>
   );
 }

@@ -695,6 +695,111 @@ select {
   line-height: 1.5;
 }
 
+.survey-form {
+  display: grid;
+  gap: 1rem;
+}
+
+.survey-section {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.survey-section h2 {
+  margin: 0;
+  color: white;
+  font-size: 0.95rem;
+}
+
+.survey-hint {
+  margin: -0.5rem 0 0;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.62rem;
+}
+
+.survey-field {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.survey-label {
+  padding: 0;
+  color: white;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.survey-input {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: white;
+  color: #171717;
+  font: inherit;
+  font-size: 0.72rem;
+}
+
+.survey-textarea {
+  resize: vertical;
+}
+
+.survey-input:focus-visible,
+.survey-choice:focus-visible,
+.survey-submit:focus-visible {
+  outline: 2px solid #ffcdd2;
+  outline-offset: 2px;
+}
+
+.survey-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.survey-choice {
+  min-width: 4.5rem;
+  padding: 0.45rem 0.8rem;
+  border: 2px solid transparent;
+  border-radius: 0.45rem;
+  background: white;
+  color: #171717;
+  cursor: pointer;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.survey-choice.is-selected {
+  border-color: #ffcdd2;
+  background: #b71c1c;
+  color: white;
+}
+
+.survey-submit {
+  justify-self: start;
+  padding: 0.55rem 1.6rem;
+  border: 0;
+  border-radius: 0.45rem;
+  background: white;
+  color: #76090d;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.survey-submit:hover {
+  background: #ffebee;
+}
+
+.help-survey-link {
+  margin-top: 1rem;
+}
+
 @media (max-width: 640px) {
   .top-nav {
     padding: 0.7rem 0.9rem;

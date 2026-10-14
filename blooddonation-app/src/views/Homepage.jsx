@@ -10,8 +10,11 @@ import {
   X,
 } from 'lucide-react';
 import Help from './Help';
+import Survey from './Survey';
 
 export default function Homepage({ onNavigate, currentView = 'home' }) {
+  const isHelpSection = currentView === 'help' || currentView === 'survey';
+  const activeSection = currentView === 'survey' ? 'help' : currentView;
   const [showMenu, setShowMenu] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -33,7 +36,7 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
   ];
 
   return (
-    <div className={`homepage-shell${currentView === 'help' ? ' help-shell' : ''}`}>
+    <div className={`homepage-shell${isHelpSection ? ' help-shell' : ''}`}>
       <nav className="top-nav" aria-label="Site header">
         <div className="nav-left">
           <button
@@ -84,9 +87,9 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
         {sectionLinks.map((item) => (
           <button
             key={item.view}
-            className={`section-nav-link${item.view === currentView ? ' active' : ''}`}
+            className={`section-nav-link${item.view === activeSection ? ' active' : ''}`}
             onClick={() => onNavigate(item.view)}
-            aria-current={item.view === currentView ? 'page' : undefined}
+            aria-current={item.view === activeSection ? 'page' : undefined}
           >
             {item.label}
           </button>
@@ -197,10 +200,10 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
         </section>
       )}
 
-      <main className={currentView === 'help' ? 'help-main' : 'homepage-main'}>
-        {currentView === 'help' ? (
-          <Help />
-        ) : (
+      <main className={isHelpSection ? 'help-main' : 'homepage-main'}>
+        {currentView === 'survey' && <Survey />}
+        {currentView === 'help' && <Help onNavigate={onNavigate} />}
+        {!isHelpSection && (
           <>
             <section className="welcome-banner">
               <h1>Welcome to BloodDonate Dashboard</h1>

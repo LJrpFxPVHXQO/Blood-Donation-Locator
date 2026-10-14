@@ -37,7 +37,7 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {(currentView === 'home' || currentView === 'help') && (
+      {(currentView === 'home' || currentView === 'help' || currentView === 'survey') && (
         <Homepage onNavigate={setCurrentView} currentView={currentView} />
       )}
       {currentView === 'emergency' && renderModulePage('Emergency Requests Module', 'Review urgent blood requests and manage emergency donor coordination in real time.')}
