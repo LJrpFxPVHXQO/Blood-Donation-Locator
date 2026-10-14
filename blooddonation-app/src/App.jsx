@@ -37,11 +37,12 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {currentView === 'home' && <Homepage onNavigate={setCurrentView} />}
+      {(currentView === 'home' || currentView === 'help') && (
+        <Homepage onNavigate={setCurrentView} currentView={currentView} />
+      )}
       {currentView === 'emergency' && renderModulePage('Emergency Requests Module', '🚨', 'Review urgent blood requests and manage emergency donor coordination in real time.')}
       {currentView === 'donation' && renderModulePage('Blood Donation Locator Module', '🩸', 'Locate nearby donation centers and monitor donor availability across your region.')}
       {currentView === 'eligibility' && renderModulePage('Donation Eligibility', '🛡️', 'Review general donor eligibility guidance before making a donation. A donation center can confirm your eligibility based on your health and local guidelines.')}
-      {currentView === 'help' && renderModulePage('Help & Support Module', '❓', 'Access FAQs, support forms, and quick guidance for donors and staff.')}
       {currentView === 'profile' && renderModulePage('Profile & Accessibility Module', '👤', 'Manage accessibility settings, account preferences, and personal donor information safely.')}
     </div>
   );
