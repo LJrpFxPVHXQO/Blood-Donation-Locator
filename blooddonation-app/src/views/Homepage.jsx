@@ -220,7 +220,7 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
               <button className="module-card donation-card" onClick={() => onNavigate('donation')}>
                 <Droplet size={36} />
                 <span className="card-title">BLOOD DONATION</span>
-                <span className="card-copy">Find Nearby Centers</span>
+                <span className="card-copy">Survey Qualification</span>
               </button>
               <button className="module-card help-card" onClick={() => onNavigate('help')}>
                 <HelpCircle size={36} />
@@ -229,8 +229,8 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
               </button>
               <button className="module-card profile-card" onClick={() => onNavigate('profile')}>
                 <Shield size={36} />
-                <span className="card-title">PROFILE & PWD</span>
-                <span className="card-copy">Account & Accessibility Options</span>
+                <span className="card-title">Blood Center </span>
+                <span className="card-copy">Locate nearby blood centers near NCR</span>
               </button>
             </div>
           </>
