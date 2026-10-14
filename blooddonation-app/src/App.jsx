@@ -4,11 +4,11 @@ import Homepage from './views/Homepage';
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
 
-  const renderModulePage = (title, emoji, description) => (
+  const renderModulePage = (title, description) => (
     <div className="module-page">
       <div className="panel module-panel">
         <h2>
-          {emoji} {title}
+          {title}
         </h2>
         <p>{description}</p>
         <button className="back-button" onClick={() => setCurrentView('home')}>
@@ -40,10 +40,10 @@ export default function App() {
       {(currentView === 'home' || currentView === 'help') && (
         <Homepage onNavigate={setCurrentView} currentView={currentView} />
       )}
-      {currentView === 'emergency' && renderModulePage('Emergency Requests Module', '🚨', 'Review urgent blood requests and manage emergency donor coordination in real time.')}
-      {currentView === 'donation' && renderModulePage('Blood Donation Locator Module', '🩸', 'Locate nearby donation centers and monitor donor availability across your region.')}
-      {currentView === 'eligibility' && renderModulePage('Donation Eligibility', '🛡️', 'Review general donor eligibility guidance before making a donation. A donation center can confirm your eligibility based on your health and local guidelines.')}
-      {currentView === 'profile' && renderModulePage('Profile & Accessibility Module', '👤', 'Manage accessibility settings, account preferences, and personal donor information safely.')}
+      {currentView === 'emergency' && renderModulePage('Emergency Requests Module', 'Review urgent blood requests and manage emergency donor coordination in real time.')}
+      {currentView === 'donation' && renderModulePage('Blood Donation Locator Survey', 'Do a survey if you are going to donate blood. The survey will ask for your donor history and medical history.')}
+      {currentView === 'eligibility' && renderModulePage('Donation Eligibility', 'Review general donor eligibility guidance before making a donation. A donation center can confirm your eligibility based on your health and local guidelines.')}
+      {currentView === 'profile' && renderModulePage('Blood Donation Locator Module', 'Locate nearby donation centers and monitor donor availability across your region.')}
     </div>
   );
 }
