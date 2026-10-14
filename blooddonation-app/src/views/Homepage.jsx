@@ -9,8 +9,9 @@ import {
   Shield,
   X,
 } from 'lucide-react';
+import Help from './Help';
 
-export default function Homepage({ onNavigate }) {
+export default function Homepage({ onNavigate, currentView = 'home' }) {
   const [showMenu, setShowMenu] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -32,7 +33,7 @@ export default function Homepage({ onNavigate }) {
   ];
 
   return (
-    <div className="homepage-shell">
+    <div className={`homepage-shell${currentView === 'help' ? ' help-shell' : ''}`}>
       <nav className="top-nav" aria-label="Site header">
         <div className="nav-left">
           <button
@@ -83,9 +84,9 @@ export default function Homepage({ onNavigate }) {
         {sectionLinks.map((item) => (
           <button
             key={item.view}
-            className={`section-nav-link${item.view === 'home' ? ' active' : ''}`}
+            className={`section-nav-link${item.view === currentView ? ' active' : ''}`}
             onClick={() => onNavigate(item.view)}
-            aria-current={item.view === 'home' ? 'page' : undefined}
+            aria-current={item.view === currentView ? 'page' : undefined}
           >
             {item.label}
           </button>
@@ -196,38 +197,44 @@ export default function Homepage({ onNavigate }) {
         </section>
       )}
 
-      <main className="homepage-main">
-        <section className="welcome-banner">
-          <h1>Welcome to BloodDonate Dashboard</h1>
-          <p>
-            Coordinate emergency blood dispatch, track donor availability, and check urgent hospital
-            requests in real time. Choose an operational module below to continue.
-          </p>
-        </section>
+      <main className={currentView === 'help' ? 'help-main' : 'homepage-main'}>
+        {currentView === 'help' ? (
+          <Help />
+        ) : (
+          <>
+            <section className="welcome-banner">
+              <h1>Welcome to BloodDonate Dashboard</h1>
+              <p>
+                Coordinate emergency blood dispatch, track donor availability, and check urgent hospital
+                requests in real time. Choose an operational module below to continue.
+              </p>
+            </section>
 
-        <h2 className="section-title">Quick Action Modules</h2>
-        <div className="action-grid">
-          <button className="module-card emergency-card" onClick={() => onNavigate('emergency')}>
-            <AlertTriangle size={36} />
-            <span className="card-title">EMERGENCY</span>
-            <span className="card-copy">Post or View Urgent Calls</span>
-          </button>
-          <button className="module-card donation-card" onClick={() => onNavigate('donation')}>
-            <Droplet size={36} />
-            <span className="card-title">BLOOD DONATION</span>
-            <span className="card-copy">Find Nearby Centers</span>
-          </button>
-          <button className="module-card help-card" onClick={() => onNavigate('help')}>
-            <HelpCircle size={36} />
-            <span className="card-title">HELP SECTION</span>
-            <span className="card-copy">FAQs & Survey Forms</span>
-          </button>
-          <button className="module-card profile-card" onClick={() => onNavigate('profile')}>
-            <Shield size={36} />
-            <span className="card-title">PROFILE & PWD</span>
-            <span className="card-copy">Account & Accessibility Options</span>
-          </button>
-        </div>
+            <h2 className="section-title">Quick Action Modules</h2>
+            <div className="action-grid">
+              <button className="module-card emergency-card" onClick={() => onNavigate('emergency')}>
+                <AlertTriangle size={36} />
+                <span className="card-title">EMERGENCY</span>
+                <span className="card-copy">Post or View Urgent Calls</span>
+              </button>
+              <button className="module-card donation-card" onClick={() => onNavigate('donation')}>
+                <Droplet size={36} />
+                <span className="card-title">BLOOD DONATION</span>
+                <span className="card-copy">Find Nearby Centers</span>
+              </button>
+              <button className="module-card help-card" onClick={() => onNavigate('help')}>
+                <HelpCircle size={36} />
+                <span className="card-title">HELP SECTION</span>
+                <span className="card-copy">FAQs & Survey Forms</span>
+              </button>
+              <button className="module-card profile-card" onClick={() => onNavigate('profile')}>
+                <Shield size={36} />
+                <span className="card-title">PROFILE & PWD</span>
+                <span className="card-copy">Account & Accessibility Options</span>
+              </button>
+            </div>
+          </>
+        )}
       </main>
     </div>
   );
