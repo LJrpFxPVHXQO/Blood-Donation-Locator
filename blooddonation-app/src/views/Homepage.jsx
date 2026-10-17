@@ -14,7 +14,7 @@ import Survey from './Survey';
 
 export default function Homepage({ onNavigate, currentView = 'home' }) {
   const isHelpSection = currentView === 'help' || currentView === 'survey';
-  const activeSection = currentView === 'survey' ? 'help' : currentView;
+  const activeSection = currentView === 'survey' ? 'survey' : currentView;
   const [showMenu, setShowMenu] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -22,14 +22,14 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
   const sectionLinks = [
     { label: 'Home', view: 'home' },
     { label: 'Help', view: 'help' },
-    { label: 'Donate', view: 'donation' },
+    { label: 'Blood Donation', view: 'survey' },
     { label: 'Emergency', view: 'emergency' },
   ];
 
   const drawerLinks = [
     { label: 'Profile', view: 'profile' },
     { label: 'Condition to donate', view: 'eligibility' },
-    { label: 'Donation locations', view: 'donation' },
+    { label: 'Donation locations', view: 'profile' },
     { label: 'FAQ', view: 'help' },
     { label: 'Settings', view: 'profile' },
     { label: 'Emergency requests', view: 'emergency' },
@@ -220,15 +220,15 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
                 <span className="card-title">EMERGENCY</span>
                 <span className="card-copy">Post or View Urgent Calls</span>
               </button>
-              <button className="module-card donation-card" onClick={() => onNavigate('donation')}>
+              <button className="module-card donation-card" onClick={() => onNavigate('survey')}>
                 <Droplet size={36} />
                 <span className="card-title">BLOOD DONATION</span>
-                <span className="card-copy">Survey Qualification</span>
+                <span className="card-copy">Complete the donor survey</span>
               </button>
               <button className="module-card help-card" onClick={() => onNavigate('help')}>
                 <HelpCircle size={36} />
                 <span className="card-title">HELP SECTION</span>
-                <span className="card-copy">FAQs & Survey Forms</span>
+                <span className="card-copy">Answers to common questions</span>
               </button>
               <button className="module-card profile-card" onClick={() => onNavigate('profile')}>
                 <Shield size={36} />
