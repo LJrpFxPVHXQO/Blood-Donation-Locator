@@ -973,3 +973,144 @@ select {
   }
 
 }
+
+.emergency-page {
+  width: min(100%, 58rem);
+  margin: 0 auto;
+  padding: clamp(1.4rem, 4vw, 2.5rem) 1rem 3rem;
+  color: #2b1717;
+}
+
+.emergency-heading-row,
+.emergency-feed-toolbar,
+.request-title-row,
+.request-actions,
+.emergency-form-heading,
+.emergency-form-footer,
+.booking-person-row,
+.booking-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.emergency-heading-row { margin-bottom: 1.25rem; }
+.emergency-eyebrow { display: inline-flex; align-items: center; gap: 0.45rem; margin: 0 0 0.45rem; color: #8b2024; font-size: 0.7rem; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
+.emergency-eyebrow span { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #b92e35; box-shadow: 0 0 0 3px rgba(185, 46, 53, 0.13); }
+.emergency-heading-row h1 { margin: 0; color: #4d1013; font-size: clamp(1.55rem, 4vw, 2.1rem); line-height: 1.15; }
+.emergency-intro { margin: 0.45rem 0 0; color: #745f5c; font-size: 0.9rem; }
+.emergency-heading-icon { display: grid; width: 3.25rem; height: 3.25rem; flex: 0 0 auto; place-items: center; border: 1px solid #e4c5bd; border-radius: 0.8rem; background: #f4e8df; color: #8e161d; }
+
+.emergency-tabs { display: flex; gap: 0.25rem; padding: 0.3rem; border: 1px solid #ead6cd; border-radius: 0.65rem; background: #f5e9e0; }
+.emergency-tab { display: inline-flex; min-height: 2.7rem; flex: 1; align-items: center; justify-content: center; gap: 0.5rem; border: 0; border-radius: 0.45rem; background: transparent; color: #725552; cursor: pointer; font-size: 0.87rem; font-weight: 650; }
+.emergency-tab.is-active { background: white; color: #7e141a; box-shadow: 0 1px 4px rgba(68, 25, 18, 0.12); }
+.emergency-content { margin-top: 1rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid #ead6cd; border-radius: 0.7rem; background: #fffdfa; box-shadow: 0 5px 18px rgba(64, 26, 18, 0.07); }
+.emergency-feed-toolbar { align-items: flex-end; margin-bottom: 1rem; }
+.emergency-feed-toolbar h2,
+.emergency-form-heading h2,
+.booking-title h2,
+.offer-confirmed h2 { margin: 0; color: #4d1013; font-size: 1.05rem; }
+.emergency-feed-toolbar p,
+.emergency-form-heading p,
+.booking-title p { margin: 0.3rem 0 0; color: #806d68; font-size: 0.78rem; }
+.blood-filter { display: grid; gap: 0.3rem; color: #705b57; font-size: 0.68rem; font-weight: 650; }
+.blood-filter select { min-width: 8.5rem; padding: 0.5rem 0.65rem; border: 1px solid #dbc3bb; border-radius: 0.4rem; background: white; color: #321d1b; }
+.emergency-request-list { display: grid; gap: 0.75rem; }
+.emergency-request { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1rem; padding: 1rem; border: 1px solid #eadbd4; border-radius: 0.55rem; background: white; }
+.request-type-badge { display: flex; width: 3.25rem; height: 3.25rem; flex-direction: column; align-items: center; justify-content: center; gap: 0.15rem; border-radius: 0.55rem; background: #f7e6e2; color: #9b1b23; font-size: 0.8rem; font-weight: 750; }
+.request-main { min-width: 0; }
+.request-title-row { align-items: flex-start; }
+.requester-name { display: flex; align-items: center; gap: 0.35rem; margin: 0 0 0.2rem; color: #725d59; font-size: 0.72rem; }
+.request-main h3 { margin: 0; color: #321719; font-size: 1rem; }
+.request-open-status { flex: 0 0 auto; padding: 0.25rem 0.55rem; border-radius: 999px; background: #e6f3ea; color: #286342; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; }
+.request-facts { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 0.65rem; color: #655552; font-size: 0.74rem; }
+.request-facts span,
+.request-contact-link,
+.request-help-button,
+.emergency-form-footer p,
+.booking-fact-grid strong,
+.confirmed-contact a { display: inline-flex; align-items: center; gap: 0.4rem; }
+.request-facts svg { color: #9a3438; }
+.request-message { margin: 0.75rem 0; color: #523e3a; font-size: 0.8rem; line-height: 1.55; }
+.request-actions { justify-content: flex-start; flex-wrap: wrap; gap: 0.6rem 1rem; }
+.request-help-button,
+.emergency-submit-button { justify-content: center; min-height: 2.4rem; padding: 0.55rem 0.85rem; border: 0; border-radius: 0.4rem; background: #87171d; color: white; cursor: pointer; font-size: 0.76rem; font-weight: 700; }
+.request-help-button:hover,
+.emergency-submit-button:not(:disabled):hover { background: #681015; }
+.request-contact-link { color: #852127; font-size: 0.75rem; font-weight: 650; text-decoration: none; }
+.request-contact-link:hover { text-decoration: underline; }
+.emergency-demo-note { display: flex; align-items: center; gap: 0.4rem; margin: 1rem 0 0; color: #806d68; font-size: 0.68rem; }
+.emergency-demo-note svg { color: #557460; }
+.emergency-empty-state { display: grid; justify-items: center; padding: 2rem 1rem; color: #796561; text-align: center; }
+.emergency-empty-state > svg { color: #9d343a; }
+.emergency-empty-state h3 { margin: 0.6rem 0 0.25rem; color: #4d1013; font-size: 0.95rem; }
+.emergency-empty-state p { margin: 0; font-size: 0.78rem; }
+.emergency-empty-state button { margin-top: 0.75rem; border: 0; background: none; color: #8a1b21; cursor: pointer; font-weight: 700; }
+
+.emergency-form { display: grid; gap: 1.1rem; }
+.emergency-form-heading { align-items: flex-start; }
+.form-step-label { color: #8a3438; font-size: 0.65rem; font-weight: 750; letter-spacing: 0.06em; }
+.emergency-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; }
+.emergency-field { display: grid; min-width: 0; gap: 0.35rem; color: #563f3b; font-size: 0.73rem; font-weight: 650; }
+.emergency-field-wide { grid-column: 1 / -1; }
+.emergency-field input,
+.emergency-field select,
+.emergency-field textarea { width: 100%; min-height: 2.55rem; padding: 0.6rem 0.7rem; border: 1px solid #ddc9c1; border-radius: 0.4rem; background: white; color: #321d1b; font-size: 0.78rem; font-weight: 450; }
+.emergency-field textarea { min-height: 5rem; resize: vertical; }
+.emergency-field input:focus,
+.emergency-field select:focus,
+.emergency-field textarea:focus { border-color: #9e3036; outline: 2px solid rgba(158, 48, 54, 0.12); }
+.sharing-consent { display: flex; align-items: flex-start; gap: 0.6rem; color: #5d4945; font-size: 0.74rem; line-height: 1.5; }
+.sharing-consent input { width: 1rem; height: 1rem; flex: 0 0 auto; accent-color: #87171d; }
+.emergency-form-error { margin: -0.5rem 0 0; color: #a0141c; font-size: 0.75rem; }
+.emergency-form-footer { padding-top: 0.9rem; border-top: 1px solid #efdfd7; }
+.emergency-form-footer p { margin: 0; color: #806d68; font-size: 0.69rem; }
+.emergency-form-footer p svg { flex: 0 0 auto; color: #557460; }
+.emergency-submit-button:disabled { background: #c8b5b1; cursor: not-allowed; }
+
+.booking-content { max-width: 48rem; margin-inline: auto; }
+.booking-back-button { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0; border: 0; background: transparent; color: #852127; cursor: pointer; font-size: 0.75rem; font-weight: 650; }
+.booking-title { display: flex; align-items: center; gap: 0.75rem; margin: 1.1rem 0; }
+.booking-title > span,
+.offer-confirmed-icon { display: grid; width: 2.5rem; height: 2.5rem; flex: 0 0 auto; place-items: center; border-radius: 50%; background: #e4f0e7; color: #286342; }
+.booking-details { padding: 1rem; border: 1px solid #eadbd4; border-radius: 0.5rem; background: white; }
+.booking-person-row { justify-content: flex-start; padding-bottom: 0.9rem; border-bottom: 1px solid #efdfd7; }
+.booking-person-row > div:nth-child(2) { display: grid; flex: 1; gap: 0.2rem; }
+.booking-person-row strong { color: #321719; font-size: 0.85rem; }
+.booking-person-row span:not(.request-open-status) { color: #806d68; font-size: 0.7rem; }
+.booking-avatar { display: grid; width: 2.4rem; height: 2.4rem; place-items: center; border-radius: 50%; background: #f6e5df; color: #8b2024; }
+.booking-fact-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.85rem; padding: 1rem 0; }
+.booking-fact-grid > div { display: grid; gap: 0.25rem; }
+.booking-fact-grid > div > span { color: #806d68; font-size: 0.66rem; }
+.booking-fact-grid strong { color: #321719; font-size: 0.76rem; }
+.booking-fact-grid strong svg { color: #9a3438; }
+.booking-message { margin: 0; padding: 0.8rem; border-radius: 0.4rem; background: #fbf3ef; color: #594541; font-size: 0.78rem; line-height: 1.5; }
+.booking-actions { margin-top: 1rem; }
+.offer-confirmed { display: grid; justify-items: center; max-width: 42rem; margin-inline: auto; text-align: center; }
+.offer-confirmed .emergency-eyebrow { margin-top: 1rem; }
+.offer-confirmed h2 { font-size: 1.25rem; }
+.offer-confirmed > p:not(.emergency-eyebrow) { max-width: 28rem; margin: 0.5rem 0 1.2rem; color: #745f5c; font-size: 0.82rem; line-height: 1.6; }
+.confirmed-contact { display: grid; width: min(100%, 26rem); gap: 0.6rem; margin-bottom: 1.1rem; padding: 1rem; border: 1px solid #eadbd4; border-radius: 0.5rem; background: white; }
+.confirmed-contact > span { color: #806d68; font-size: 0.72rem; }
+.confirmed-contact a { justify-content: center; min-height: 2.4rem; border-radius: 0.4rem; background: #87171d; color: white; font-size: 0.76rem; font-weight: 700; text-decoration: none; }
+
+@media (max-width: 620px) {
+  .emergency-page { padding: 1.2rem 0.75rem 2.5rem; }
+  .emergency-heading-icon { width: 2.75rem; height: 2.75rem; }
+  .emergency-intro { max-width: 19rem; font-size: 0.8rem; line-height: 1.5; }
+  .emergency-content { padding: 0.85rem; }
+  .emergency-feed-toolbar { align-items: flex-start; flex-direction: column; }
+  .blood-filter,
+  .blood-filter select { width: 100%; }
+  .emergency-request { grid-template-columns: 1fr; gap: 0.65rem; padding: 0.8rem; }
+  .request-type-badge { width: auto; height: auto; flex-direction: row; justify-self: start; padding: 0.35rem 0.55rem; }
+  .request-actions { align-items: flex-start; flex-direction: column; }
+  .emergency-form-grid { grid-template-columns: 1fr; }
+  .emergency-field-wide { grid-column: auto; }
+  .emergency-form-footer { align-items: stretch; flex-direction: column; }
+  .emergency-form-footer .emergency-submit-button { width: 100%; }
+  .booking-fact-grid { gap: 0.75rem 0.5rem; }
+  .booking-actions { align-items: stretch; flex-direction: column-reverse; }
+  .booking-actions > * { justify-content: center; min-height: 2.5rem; }
+}

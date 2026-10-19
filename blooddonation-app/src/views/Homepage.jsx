@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import Help from './Help';
 import Survey from './Survey';
+import Emergency from './Emergency';
 
 export default function Homepage({ onNavigate, currentView = 'home' }) {
   const isHelpSection = currentView === 'help' || currentView === 'survey';
@@ -201,9 +202,10 @@ export default function Homepage({ onNavigate, currentView = 'home' }) {
       )}
 
       <main className={isHelpSection ? 'help-main' : 'homepage-main'}>
+        {currentView === 'emergency' && <Emergency />}
         {currentView === 'survey' && <Survey />}
         {currentView === 'help' && <Help onNavigate={onNavigate} />}
-        {!isHelpSection && (
+        {currentView === 'home' && (
           <>
             <section className="welcome-banner">
               <h1>Welcome to BloodDonate Dashboard</h1>
