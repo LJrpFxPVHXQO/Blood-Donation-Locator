@@ -14,7 +14,7 @@ const cities = [
 const regions = ['National Capital Region'];
 
 export default function Locator() {
-  const [region, setRegion] = useState(regions[0]);
+  const region = 'National Capital Region';
   const [selectedCity, setSelectedCity] = useState('');
   const [expandedCity, setExpandedCity] = useState('');
 
@@ -53,3 +53,4 @@ export default function Locator() {
     </main>
   );
 }
+

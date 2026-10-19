@@ -102,3 +102,7 @@
   .locator-panel { min-height: 19rem; padding: 1.3rem 1rem 1.6rem; }
   .locator-city-select { min-height: 2rem; }
 }
+
+.locator-shell .section-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 100; }
+.locator-shell .top-nav { position: relative; }
+
