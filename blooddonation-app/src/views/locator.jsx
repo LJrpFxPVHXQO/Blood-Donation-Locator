@@ -1,5 +1,4 @@
 ﻿import { useState } from 'react';
-import './locator.css';
 
 const cities = [
   { name: 'Quezon City', detail: 'East Avenue Medical Center, National Kidney and Transplant Institute' },
@@ -10,8 +9,6 @@ const cities = [
   { name: 'Rizal Main', detail: 'Rizal Medical Center, Pasig' },
   { name: 'Muntinlupa', detail: 'Ospital ng Muntinlupa' },
 ];
-
-const regions = ['National Capital Region'];
 
 export default function Locator() {
   const region = 'National Capital Region';
@@ -53,4 +50,3 @@ export default function Locator() {
     </main>
   );
 }
-

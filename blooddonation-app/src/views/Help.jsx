@@ -8,7 +8,7 @@ const questions = [
   'Do you need proper sleep before donating?',
 ];
 
-export default function Help({}) {
+export default function Help() {
   const [openQuestions, setOpenQuestions] = useState([]);
 
   const toggleQuestion = (index) => {
