@@ -717,6 +717,10 @@ select {
   font-size: 0.62rem;
 }
 
+.survey-field .survey-hint {
+  margin: -0.1rem 0 0;
+}
+
 .survey-field {
   display: grid;
   gap: 0.3rem;
@@ -750,7 +754,8 @@ select {
 
 .survey-input:focus-visible,
 .survey-choice:focus-visible,
-.survey-submit:focus-visible {
+.survey-submit:focus-visible,
+.survey-back:focus-visible {
   outline: 2px solid #ffcdd2;
   outline-offset: 2px;
 }
@@ -794,6 +799,76 @@ select {
 
 .survey-submit:hover {
   background: #ffebee;
+}
+
+.survey-progress {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 0.9rem;
+}
+
+.survey-progress-track {
+  height: 0.35rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.survey-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #ffcdd2;
+  transition: width 0.25s ease;
+}
+
+.survey-progress-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.survey-error {
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  border-radius: 0.45rem;
+  background: #ffebee;
+  color: #76090d;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.survey-field.has-error .survey-label {
+  color: #ffcdd2;
+}
+
+.survey-field.has-error .survey-input {
+  box-shadow: 0 0 0 2px #ffcdd2;
+}
+
+.survey-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.survey-back {
+  padding: 0.55rem 1.3rem;
+  border: 2px solid rgba(255, 255, 255, 0.65);
+  border-radius: 0.45rem;
+  background: transparent;
+  color: white;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.survey-back:hover {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .help-survey-link {
