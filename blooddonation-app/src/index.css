@@ -793,7 +793,7 @@ select {
 
 .reminder-popover {
   position: absolute;
-  top: calc(100% - 0.7rem);
+  top: calc(100% - 1.2rem);
   right: 1.25rem;
   z-index: 150;
   width: min(88vw, 18.75rem);
@@ -843,7 +843,7 @@ select {
 
 .profile-popover {
   position: absolute;
-  top: calc(100% - 0.7rem);
+  top: calc(100% - 1.2rem);
   right: 1.25rem;
   z-index: 150;
   width: min(88vw, 18.75rem);
