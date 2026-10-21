@@ -44,7 +44,7 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, ch
 
   const drawerLinks = [
     { label: 'Profile', view: 'profile' },
-    { label: 'Condition to donate', view: 'eligibility' },
+    { label: 'Condition to donate', view: 'survey' },
     { label: 'Donation locations', view: 'locator' },
     { label: 'FAQ', view: 'help' },
     { label: 'Settings', view: 'profile' },
