@@ -59,7 +59,7 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, ch
     .join('');
 
   return (
-    <div className={`homepage-shell${isHelpSection ? ' help-shell' : ''}`}>
+    <div className={`homepage-shell${isHelpSection ? ' help-shell' : ''}${currentView === 'survey' ? ' survey-shell' : ''}`}>
       <div className="site-navigation">
         <nav className="top-nav" aria-label="Site header">
           <div className="nav-left">

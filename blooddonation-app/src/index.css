@@ -1238,6 +1238,10 @@ select {
 ;
 }
 
+.survey-shell {
+  background: #fce4ec;
+}
+
 .help-main {
   display: grid;
   min-height: calc(100vh - 4.25rem);
@@ -1252,6 +1256,10 @@ select {
   background: #76090d;
   color: white;
   box-shadow: 0 0.4rem 0.85rem rgba(45, 14, 10, 0.2);
+}
+
+.survey-panel-medical {
+  width: min(100%, 76rem);
 }
 
 .help-eyebrow {
@@ -1340,6 +1348,16 @@ select {
 .survey-section {
   display: grid;
   gap: 0.6rem;
+}
+
+.survey-section-medical {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.survey-section-medical > h2,
+.survey-section-medical > .survey-hint,
+.survey-section-medical > .survey-error {
+  grid-column: 1 / -1;
 }
 
 .survey-section h2 {
@@ -1513,6 +1531,16 @@ select {
 }
 
 @media (max-width: 640px) {
+  .survey-section-medical {
+    grid-template-columns: 1fr;
+  }
+
+  .survey-section-medical > h2,
+  .survey-section-medical > .survey-hint,
+  .survey-section-medical > .survey-error {
+    grid-column: auto;
+  }
+
   .top-nav {
     padding: 0.7rem 0.9rem;
   }
@@ -1923,7 +1951,10 @@ select {
   width: min(100%, 58rem);
   margin: 0 auto;
   padding: clamp(1.4rem, 4vw, 2.5rem) 1rem 3rem;
-  color: #2b1717;
+  border: 2px solid #76090d;
+  border-radius: 0.75rem;
+  background: #76090d;
+  color: white;
 }
 
 .emergency-heading-row,
@@ -2052,12 +2083,16 @@ select {
 .emergency-eyebrow span { width: 0.5rem; height: 0.5rem; border-radius: 50%; background: #b92e35; box-shadow: 0 0 0 3px rgba(185, 46, 53, 0.13); }
 .emergency-heading-row h1 { margin: 0; color: #4d1013; font-size: clamp(1.55rem, 4vw, 2.1rem); line-height: 1.15; }
 .emergency-intro { margin: 0.45rem 0 0; color: #745f5c; font-size: 0.9rem; }
+.emergency-page .emergency-heading-row h1,
+.emergency-page .emergency-heading-row .emergency-eyebrow,
+.emergency-page .emergency-heading-row .emergency-intro { color: white; }
+.emergency-page .emergency-eyebrow span { background: white; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2); }
 .emergency-heading-icon { display: grid; width: 3.25rem; height: 3.25rem; flex: 0 0 auto; place-items: center; border: 1px solid #e4c5bd; border-radius: 0.8rem; background: #f4e8df; color: #8e161d; }
 
 .emergency-tabs { display: flex; gap: 0.25rem; padding: 0.3rem; border: 1px solid #ead6cd; border-radius: 0.65rem; background: #f5e9e0; }
 .emergency-tab { display: inline-flex; min-height: 2.7rem; flex: 1; align-items: center; justify-content: center; gap: 0.5rem; border: 0; border-radius: 0.45rem; background: transparent; color: #725552; cursor: pointer; font-size: 0.87rem; font-weight: 650; }
 .emergency-tab.is-active { background: white; color: #7e141a; box-shadow: 0 1px 4px rgba(68, 25, 18, 0.12); }
-.emergency-content { margin-top: 1rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid #ead6cd; border-radius: 0.7rem; background: #fffdfa; box-shadow: 0 5px 18px rgba(64, 26, 18, 0.07); }
+.emergency-content { margin-top: 1rem; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid #ead6cd; border-radius: 0.7rem; background: #fffdfa; color: #2b1717; box-shadow: 0 5px 18px rgba(64, 26, 18, 0.07); }
 .emergency-feed-toolbar { align-items: flex-end; margin-bottom: 1rem; }
 .emergency-feed-toolbar h2,
 .emergency-form-heading h2,

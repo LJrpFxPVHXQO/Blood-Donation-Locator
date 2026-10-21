@@ -269,7 +269,7 @@ export default function Survey() {
   }
 
   return (
-    <section className="help-card-panel survey-panel" aria-labelledby="survey-title" ref={panelRef}>
+    <section className={`help-card-panel survey-panel${currentStep.id === 'medical' ? ' survey-panel-medical' : ''}`} aria-labelledby="survey-title" ref={panelRef}>
       <span className="help-eyebrow">BLOOD DONATION SURVEY</span>
       <h1 id="survey-title">Blood Donation Survey</h1>
       <p className="help-intro">Share your experience to help us improve the blood donation process.</p>
@@ -294,7 +294,7 @@ export default function Survey() {
       </div>
 
       <form className="survey-form" onSubmit={handleSubmit}>
-        <div className="survey-section" key={currentStep.id}>
+        <div className={`survey-section survey-section-${currentStep.id}`} key={currentStep.id}>
           <h2>{currentStep.title}</h2>
           <p className="survey-hint">{currentStep.hint}</p>
 
