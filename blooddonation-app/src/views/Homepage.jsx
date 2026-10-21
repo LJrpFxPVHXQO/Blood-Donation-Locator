@@ -12,6 +12,7 @@ import {
 import Help from './Help';
 import Locator from './locator';
 import Survey from './Survey';
+import Emergency from './Emergency';
 
 export default function Homepage({ onNavigate, currentView = 'home', profile, children }) {
   const isHelpSection = currentView === 'help' || currentView === 'survey';
@@ -226,13 +227,7 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, ch
 
       <main className={isHelpSection ? 'help-main' : 'homepage-main'}>
         {isProfileSection ? children : currentView === 'locator' ? <Locator /> : currentView === 'emergency' ? (
-          <div className="panel module-panel emergency-module-panel">
-            <h2>Emergency Requests Module</h2>
-            <p>Review urgent blood requests and manage emergency donor coordination in real time.</p>
-            <button className="back-button" onClick={() => onNavigate('home')}>
-              Back to Dashboard
-            </button>
-          </div>
+          <Emergency />
         ) : (
           <>
             {currentView === 'survey' && <Survey />}
