@@ -1,4 +1,7 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import EligibilityResult from '../components/EligibilityResult';
+import { evaluateEligibility } from '../services/eligibility';
+import { submitSurvey } from '../services/surveyApi';
 
 const yesNo = ['Yes', 'No'];
 const yesNoUnsure = ['Yes', 'No', 'Not sure'];
@@ -126,7 +129,28 @@ const steps = [
   },
 ];
 
-function ChoiceGroup({ label, options, value, onChange, multiple = false, invalid = false, hint }) {
+function FeedbackNote({ feedback }) {
+  if (!feedback) {
+    return null;
+  }
+
+  return (
+    <p className={`survey-feedback survey-feedback-${feedback.severity}`} role="status">
+      {feedback.detail}
+    </p>
+  );
+}
+
+function ChoiceGroup({
+  label,
+  options,
+  value,
+  onChange,
+  multiple = false,
+  invalid = false,
+  hint,
+  feedback,
+}) {
   const isSelected = (option) => (multiple ? value.includes(option) : value === option);
 
   const toggle = (option) => {
@@ -154,11 +178,12 @@ function ChoiceGroup({ label, options, value, onChange, multiple = false, invali
           </button>
         ))}
       </div>
+      <FeedbackNote feedback={feedback} />
     </fieldset>
   );
 }
 
-export default function Survey() {
+export default function Survey({ onNavigate, onEligibilityChange, userId }) {
   const [answers, setAnswers] = useState(initialAnswers);
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState([]);
@@ -167,6 +192,60 @@ export default function Survey() {
 
   const isLastStep = step === steps.length - 1;
   const currentStep = steps[step];
+
+  const evaluation = useMemo(() => evaluateEligibility(answers), [answers]);
+
+  const feedbackByField = useMemo(() => {
+    const feedback = {};
+
+    [...evaluation.blockers, ...evaluation.reviews, ...evaluation.advisories].forEach((check) => {
+      if (check.field && !feedback[check.field]) {
+        feedback[check.field] = { severity: check.severity, detail: check.detail };
+      }
+    });
+
+    return feedback;
+  }, [evaluation]);
+
+  // Show the donation decision as soon as an answer changes it, even while
+  // other questions are still unanswered.
+  const preview = useMemo(() => {
+    const pendingCount = evaluation.pending.length;
+    const pendingNote =
+      pendingCount > 0
+        ? ` ${pendingCount} question${pendingCount === 1 ? '' : 's'} still to check.`
+        : '';
+
+    if (evaluation.blockers.length > 0) {
+      return {
+        status: 'ineligible',
+        label: evaluation.shortLabel,
+        detail: `${evaluation.blockers[0].detail}${pendingNote}`,
+      };
+    }
+
+    if (evaluation.reviews.length > 0) {
+      return {
+        status: 'review',
+        label: evaluation.shortLabel,
+        detail: `${evaluation.reviews[0].detail}${pendingNote}`,
+      };
+    }
+
+    if (!evaluation.complete) {
+      return {
+        status: 'pending',
+        label: 'Checking your answers',
+        detail: `${pendingCount} question${pendingCount === 1 ? '' : 's'} left to check your eligibility.`,
+      };
+    }
+
+    return {
+      status: 'eligible',
+      label: evaluation.shortLabel,
+      detail: evaluation.summary,
+    };
+  }, [evaluation]);
 
   const setAnswer = (field) => (value) => setAnswers((current) => ({ ...current, [field]: value }));
   const handleInput = (field) => (event) => setAnswer(field)(event.target.value);
@@ -232,6 +311,8 @@ export default function Survey() {
 
     if (isLastStep) {
       setSubmitted(true);
+      onEligibilityChange?.(evaluation);
+      submitSurvey(answers, userId);
       requestAnimationFrame(() => {
         panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
@@ -247,23 +328,32 @@ export default function Survey() {
     return (
       <section className="help-card-panel survey-panel" aria-labelledby="survey-title" ref={panelRef}>
         <span className="help-eyebrow">BLOOD DONATION SURVEY</span>
-        <h1 id="survey-title">Thank you!</h1>
+        <h1 id="survey-title">Survey complete</h1>
         <p className="help-intro">
-          Your answers help us improve the blood donation process. We appreciate you taking the
-          time to complete all {steps.length} pages of the survey.
+          Your answers were screened against our donation requirements. Here is your result.
         </p>
-        <button
-          className="survey-submit"
-          type="button"
-          onClick={() => {
-            setAnswers(initialAnswers);
-            setErrors([]);
-            setStep(0);
-            setSubmitted(false);
-          }}
-        >
-          Submit another response
-        </button>
+
+        <EligibilityResult evaluation={evaluation} />
+
+        <div className="survey-actions">
+          <button
+            className="survey-submit"
+            type="button"
+            onClick={() => {
+              setAnswers(initialAnswers);
+              setErrors([]);
+              setStep(0);
+              setSubmitted(false);
+            }}
+          >
+            Submit another response
+          </button>
+          {onNavigate && (
+            <button className="survey-back" type="button" onClick={() => onNavigate('home')}>
+              Back to dashboard
+            </button>
+          )}
+        </div>
       </section>
     );
   }
@@ -291,6 +381,16 @@ export default function Survey() {
         <span className="survey-progress-text">
           Step {step + 1} of {steps.length} &middot; {currentStep.title}
         </span>
+      </div>
+
+      <div
+        className={`eligibility-preview eligibility-preview-${preview.status}`}
+        role="status"
+        aria-live="polite"
+      >
+        <span className="eligibility-preview-label">Donation eligibility</span>
+        <strong className="eligibility-preview-value">{preview.label}</strong>
+        <p className="eligibility-preview-text">{preview.detail}</p>
       </div>
 
       <form className="survey-form" onSubmit={handleSubmit}>
@@ -331,6 +431,7 @@ export default function Survey() {
                   aria-invalid={hasError('age')}
                   required
                 />
+                <FeedbackNote feedback={feedbackByField.age} />
               </label>
               <label className={`survey-field${hasError('contact') ? ' has-error' : ''}`}>
                 <span className="survey-label">Contact no.</span>
@@ -392,6 +493,7 @@ export default function Survey() {
                 value={answers.antibiotics}
                 onChange={setAnswer('antibiotics')}
                 invalid={hasError('antibiotics')}
+                feedback={feedbackByField.antibiotics}
               />
               <ChoiceGroup
                 label="Have you had a tattoo procedure this year?"
@@ -399,6 +501,7 @@ export default function Survey() {
                 value={answers.tattoo}
                 onChange={setAnswer('tattoo')}
                 invalid={hasError('tattoo')}
+                feedback={feedbackByField.tattoo}
               />
               <ChoiceGroup
                 label="Have you had a body piercing procedure this year?"
@@ -406,6 +509,7 @@ export default function Survey() {
                 value={answers.piercing}
                 onChange={setAnswer('piercing')}
                 invalid={hasError('piercing')}
+                feedback={feedbackByField.piercing}
               />
               <ChoiceGroup
                 label="Have you felt unwell (fever, cough, sore throat) in the past 14 days?"
@@ -413,6 +517,7 @@ export default function Survey() {
                 value={answers.unwell}
                 onChange={setAnswer('unwell')}
                 invalid={hasError('unwell')}
+                feedback={feedbackByField.unwell}
               />
               <ChoiceGroup
                 label="Do you have any chronic medical condition (e.g. diabetes, hypertension, heart disease)?"
@@ -420,6 +525,7 @@ export default function Survey() {
                 value={answers.chronicCondition}
                 onChange={setAnswer('chronicCondition')}
                 invalid={hasError('chronicCondition')}
+                feedback={feedbackByField.chronicCondition}
               />
               <ChoiceGroup
                 label="Are you currently taking any medications?"
@@ -427,6 +533,7 @@ export default function Survey() {
                 value={answers.medications}
                 onChange={setAnswer('medications')}
                 invalid={hasError('medications')}
+                feedback={feedbackByField.medications}
               />
               <ChoiceGroup
                 label="Have you had surgery or a blood transfusion in the past 12 months?"
@@ -434,6 +541,7 @@ export default function Survey() {
                 value={answers.surgery}
                 onChange={setAnswer('surgery')}
                 invalid={hasError('surgery')}
+                feedback={feedbackByField.surgery}
               />
               <ChoiceGroup
                 label="Have you received any vaccine in the past 4 weeks?"
@@ -441,6 +549,7 @@ export default function Survey() {
                 value={answers.vaccination}
                 onChange={setAnswer('vaccination')}
                 invalid={hasError('vaccination')}
+                feedback={feedbackByField.vaccination}
               />
               <ChoiceGroup
                 label="Have you traveled outside the country in the past 12 months?"
@@ -448,6 +557,7 @@ export default function Survey() {
                 value={answers.recentTravel}
                 onChange={setAnswer('recentTravel')}
                 invalid={hasError('recentTravel')}
+                feedback={feedbackByField.recentTravel}
               />
             </>
           )}
@@ -460,6 +570,7 @@ export default function Survey() {
                 value={answers.donatedBefore}
                 onChange={setAnswer('donatedBefore')}
                 invalid={hasError('donatedBefore')}
+                feedback={feedbackByField.donatedBefore}
               />
               {answers.donatedBefore === 'Yes' && (
                 <>
@@ -485,6 +596,7 @@ export default function Survey() {
                       value={answers.lastDonation}
                       onChange={handleInput('lastDonation')}
                     />
+                    <FeedbackNote feedback={feedbackByField.lastDonation} />
                   </label>
                 </>
               )}
@@ -514,6 +626,7 @@ export default function Survey() {
                   aria-invalid={hasError('weight')}
                   required
                 />
+                <FeedbackNote feedback={feedbackByField.weight} />
               </label>
               <ChoiceGroup
                 label="Do you smoke or vape?"
@@ -521,6 +634,7 @@ export default function Survey() {
                 value={answers.smoking}
                 onChange={setAnswer('smoking')}
                 invalid={hasError('smoking')}
+                feedback={feedbackByField.smoking}
               />
               <ChoiceGroup
                 label="How often do you drink alcohol?"
@@ -528,6 +642,7 @@ export default function Survey() {
                 value={answers.alcohol}
                 onChange={setAnswer('alcohol')}
                 invalid={hasError('alcohol')}
+                feedback={feedbackByField.alcohol}
               />
               <ChoiceGroup
                 label="How often do you exercise?"
@@ -535,6 +650,7 @@ export default function Survey() {
                 value={answers.exercise}
                 onChange={setAnswer('exercise')}
                 invalid={hasError('exercise')}
+                feedback={feedbackByField.exercise}
               />
             </>
           )}
@@ -557,6 +673,7 @@ export default function Survey() {
                 value={answers.bloodType}
                 onChange={setAnswer('bloodType')}
                 invalid={hasError('bloodType')}
+                feedback={feedbackByField.bloodType}
               />
               <ChoiceGroup
                 label="What motivates you to donate?"

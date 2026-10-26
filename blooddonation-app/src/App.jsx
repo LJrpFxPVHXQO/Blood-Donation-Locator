@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import EditProfile from './views/EditProfile';
+import Eligibility from './views/Eligibility';
 import Homepage from './views/Homepage';
 import Landingpage from './views/Landingpage';
 import LoginSignup from './views/LoginSignup';
 import Profile from './views/Profile';
+import { loadStoredEligibility, storeEligibility } from './services/eligibility';
+import { fetchLatestSurvey } from './services/surveyApi';
 
 export default function App() {
   const [currentView, setCurrentView] = useState('landing');
   const [authenticatedUser, setAuthenticatedUser] = useState(null);
-  const [profile, setProfile] = useState({
+  const [eligibility, setEligibility] = useState(() => loadStoredEligibility());
+  const [profileDetails, setProfileDetails] = useState({
     name: 'John A. Doe',
     donorId: '001',
     dateOfBirth: '1/1/2001',
@@ -26,19 +30,34 @@ export default function App() {
     ],
   });
 
-  const renderModulePage = (title, description) => (
-    <div className="module-page">
-      <div className="panel module-panel">
-        <h2>
-          {title}
-        </h2>
-        <p>{description}</p>
-        <button className="back-button" onClick={() => setCurrentView('home')}>
-          Back to Dashboard
-        </button>
-      </div>
-    </div>
+  // The donor status follows the latest survey result.
+  const profile = useMemo(
+    () => (eligibility ? { ...profileDetails, status: eligibility.shortLabel } : profileDetails),
+    [profileDetails, eligibility],
   );
+
+  // Pull the result that was saved on the server, and keep it on the device as a fallback.
+  useEffect(() => {
+    let active = true;
+
+    fetchLatestSurvey().then((savedEligibility) => {
+      if (!active || !savedEligibility) {
+        return;
+      }
+
+      setEligibility(savedEligibility);
+      storeEligibility(savedEligibility);
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleEligibilityChange = (result) => {
+    setEligibility(result);
+    storeEligibility(result);
+  };
 
   if (currentView === 'landing') {
     return (
@@ -65,15 +84,13 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {(currentView === 'home' || currentView === 'help' || currentView === 'survey' || currentView === 'donation' || currentView === 'emergency' || currentView === 'profile' || currentView === 'edit-profile' || currentView === 'locator') && (
+      {(currentView === 'home' || currentView === 'help' || currentView === 'survey' || currentView === 'donation' || currentView === 'emergency' || currentView === 'profile' || currentView === 'edit-profile' || currentView === 'locator' || currentView === 'eligibility') && (
         <Homepage
           onNavigate={setCurrentView}
-          onLogout={() => {
-            setAuthenticatedUser(null);
-            setCurrentView('landing');
-          }}
           currentView={currentView}
           profile={profile}
+          onEligibilityChange={handleEligibilityChange}
+          userId={authenticatedUser?.id}
         >
           {currentView === 'profile' && (
             <Profile profile={profile} onEdit={() => setCurrentView('edit-profile')} />
@@ -83,14 +100,19 @@ export default function App() {
               profile={profile}
               onCancel={() => setCurrentView('profile')}
               onSave={(updatedProfile) => {
-                setProfile(updatedProfile);
+                setProfileDetails(updatedProfile);
                 setCurrentView('profile');
               }}
             />
           )}
+          {currentView === 'eligibility' && (
+            <Eligibility
+              eligibility={eligibility}
+              onTakeSurvey={() => setCurrentView('survey')}
+            />
+          )}
         </Homepage>
       )}
-      {currentView === 'eligibility' && renderModulePage('Donation Eligibility', 'Review general donor eligibility guidance before making a donation. A donation center can confirm your eligibility based on your health and local guidelines.')}
     </div>
   );
 }

@@ -14,9 +14,10 @@ import Locator from './locator';
 import Survey from './Survey';
 import Emergency from './Emergency';
 
-export default function Homepage({ onNavigate, onLogout, currentView = 'home', profile, children }) {
+export default function Homepage({ onNavigate, currentView = 'home', profile, onEligibilityChange, userId, children }) {
   const isHelpSection = currentView === 'help' || currentView === 'survey';
   const isProfileSection = currentView === 'profile' || currentView === 'edit-profile';
+  const isEligibilitySection = currentView === 'eligibility';
   const activeSection = currentView === 'survey' ? 'survey' : currentView;
   const [showMenu, setShowMenu] = useState(false);
   const [showReminder, setShowReminder] = useState(false);
@@ -46,6 +47,7 @@ export default function Homepage({ onNavigate, onLogout, currentView = 'home', p
   const drawerLinks = [
     { label: 'Profile', view: 'profile' },
     { label: 'Condition to donate', view: 'survey' },
+    { label: 'Donation eligibility', view: 'eligibility' },
     { label: 'Donation locations', view: 'locator' },
     { label: 'FAQ', view: 'help' },
     { label: 'Settings', view: 'profile' },
@@ -157,7 +159,7 @@ export default function Homepage({ onNavigate, onLogout, currentView = 'home', p
                 <button
                   className="profile-action profile-logout"
                   onClick={() => {
-                    onLogout();
+                    onNavigate('landing');
                     setShowProfile(false);
                   }}
                 >
@@ -226,11 +228,17 @@ export default function Homepage({ onNavigate, onLogout, currentView = 'home', p
       )}
 
       <main className={isHelpSection ? 'help-main' : 'homepage-main'}>
-        {isProfileSection ? children : currentView === 'locator' ? <Locator /> : currentView === 'emergency' ? (
+        {isProfileSection || isEligibilitySection ? children : currentView === 'locator' ? <Locator /> : currentView === 'emergency' ? (
           <Emergency />
         ) : (
           <>
-            {currentView === 'survey' && <Survey />}
+            {currentView === 'survey' && (
+              <Survey
+                onNavigate={onNavigate}
+                onEligibilityChange={onEligibilityChange}
+                userId={userId}
+              />
+            )}
             {currentView === 'help' && <Help onNavigate={onNavigate} />}
             {!isHelpSection && (
               <>
@@ -264,6 +272,7 @@ export default function Homepage({ onNavigate, onLogout, currentView = 'home', p
                     <span className="card-title">Blood Center </span>
                     <span className="card-copy">Locate nearby blood centers near NCR</span>
                   </button>
+
                 </div>
               </>
             )}
