@@ -1,19 +1,15 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import mysql from 'mysql2/promise';
+import db from './db.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
-const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'localhost',
-  port: Number(process.env.DB_PORT || 3306),
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'blooddonation',
-  waitForConnections: true,
-  connectionLimit: 10,
-});
+
+const insertUser = db.prepare('INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)');
+const findUserByEmail = db.prepare(
+  'SELECT id, name, email, password_hash FROM users WHERE email = ? LIMIT 1',
+);
 
 app.use(express.json());
 
@@ -36,13 +32,10 @@ app.post('/api/auth/signup', async (request, response) => {
 
   try {
     const passwordHash = await bcrypt.hash(password, 12);
-    await pool.execute(
-      'INSERT INTO users (name, email, password_hash) VALUES (?, ?, ?)',
-      [name, email, passwordHash],
-    );
+    insertUser.run(name, email, passwordHash);
     return response.status(201).json({ message: 'Account created. You can now log in.' });
   } catch (error) {
-    if (error && error.code === 'ER_DUP_ENTRY') {
+    if (error && /UNIQUE constraint failed/i.test(error.message)) {
       return response.status(409).json({ message: 'An account with that email already exists.' });
     }
 
@@ -60,11 +53,7 @@ app.post('/api/auth/login', async (request, response) => {
   }
 
   try {
-    const [users] = await pool.execute(
-      'SELECT id, name, email, password_hash FROM users WHERE email = ? LIMIT 1',
-      [email],
-    );
-    const user = users[0];
+    const user = findUserByEmail.get(email);
 
     if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       return response.status(401).json({ message: 'Email address or password is incorrect.' });

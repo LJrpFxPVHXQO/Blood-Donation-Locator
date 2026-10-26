@@ -68,6 +68,10 @@ export default function App() {
       {(currentView === 'home' || currentView === 'help' || currentView === 'survey' || currentView === 'donation' || currentView === 'emergency' || currentView === 'profile' || currentView === 'edit-profile' || currentView === 'locator') && (
         <Homepage
           onNavigate={setCurrentView}
+          onLogout={() => {
+            setAuthenticatedUser(null);
+            setCurrentView('landing');
+          }}
           currentView={currentView}
           profile={profile}
         >

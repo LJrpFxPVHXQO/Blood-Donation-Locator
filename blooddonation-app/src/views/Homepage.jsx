@@ -14,7 +14,7 @@ import Locator from './locator';
 import Survey from './Survey';
 import Emergency from './Emergency';
 
-export default function Homepage({ onNavigate, currentView = 'home', profile, children }) {
+export default function Homepage({ onNavigate, onLogout, currentView = 'home', profile, children }) {
   const isHelpSection = currentView === 'help' || currentView === 'survey';
   const isProfileSection = currentView === 'profile' || currentView === 'edit-profile';
   const activeSection = currentView === 'survey' ? 'survey' : currentView;
@@ -157,7 +157,7 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, ch
                 <button
                   className="profile-action profile-logout"
                   onClick={() => {
-                    onNavigate('landing');
+                    onLogout();
                     setShowProfile(false);
                   }}
                 >
