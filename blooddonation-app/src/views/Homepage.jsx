@@ -52,6 +52,7 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, on
     { label: 'FAQ', view: 'help' },
     { label: 'Settings', view: 'profile' },
     { label: 'Emergency requests', view: 'emergency' },
+    { label: 'Back to landing page', view: 'landing' },
   ];
   const profileName = profile?.name?.trim() || 'John Doe';
   const profileInitials = profileName
@@ -75,7 +76,15 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, on
             </button>
           </div>
 
-          <div className="brand-mark" aria-label="BloodDonate">
+          <div
+            className="brand-mark"
+            aria-label="BloodDonate, back to landing page"
+            role="link"
+            tabIndex={0}
+            style={{ cursor: 'pointer' }}
+            onClick={() => onNavigate('landing')}
+            onKeyDown={(event) => event.key === 'Enter' && onNavigate('landing')}
+          >
             <img className="brand-logo" src="/blooddonate-logo.png" alt="" />
             <span>BLOODDONATE</span>
           </div>
@@ -159,7 +168,7 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, on
                 <button
                   className="profile-action profile-logout"
                   onClick={() => {
-                    onNavigate('landing');
+                    onNavigate('logout');
                     setShowProfile(false);
                   }}
                 >

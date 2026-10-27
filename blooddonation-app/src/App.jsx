@@ -9,25 +9,18 @@ import { loadStoredEligibility, storeEligibility } from './services/eligibility'
 import { fetchLatestSurvey } from './services/surveyApi';
 
 const SESSION_KEY = 'blooddonate.session';
-const LOGGED_IN_VIEWS = ['home', 'help', 'survey', 'donation', 'emergency', 'profile', 'edit-profile', 'locator', 'eligibility'];
 
-const loadSession = () => {
+const loadSessionUser = () => {
   try {
-    const session = JSON.parse(window.localStorage.getItem(SESSION_KEY));
-    if (!session?.user) {
-      return { user: null, view: 'landing' };
-    }
-
-    return { user: session.user, view: LOGGED_IN_VIEWS.includes(session.view) ? session.view : 'landing' };
+    return JSON.parse(window.localStorage.getItem(SESSION_KEY))?.user || null;
   } catch {
-    return { user: null, view: 'landing' };
+    return null;
   }
 };
 
 export default function App() {
-  const [initialSession] = useState(loadSession);
-  const [currentView, setCurrentView] = useState(initialSession.view);
-  const [authenticatedUser, setAuthenticatedUser] = useState(initialSession.user);
+  const [currentView, setCurrentView] = useState('landing');
+  const [authenticatedUser, setAuthenticatedUser] = useState(loadSessionUser);
   const [eligibility, setEligibility] = useState(() => loadStoredEligibility());
   const [profileDetails, setProfileDetails] = useState({
     name: 'John A. Doe',
@@ -71,23 +64,24 @@ export default function App() {
     };
   }, []);
 
-  // Keep the login and the open page across reloads.
+  // Keep the login across reloads; the app always opens on the landing page.
   useEffect(() => {
     try {
       if (authenticatedUser) {
-        window.localStorage.setItem(SESSION_KEY, JSON.stringify({ user: authenticatedUser, view: currentView }));
+        window.localStorage.setItem(SESSION_KEY, JSON.stringify({ user: authenticatedUser }));
       } else {
         window.localStorage.removeItem(SESSION_KEY);
       }
     } catch {
       // Storage can be unavailable; the login then lasts until the page closes.
     }
-  }, [authenticatedUser, currentView]);
+  }, [authenticatedUser]);
 
   const handleNavigate = (view) => {
-    // The only dashboard link back to the landing page is Log out.
-    if (view === 'landing') {
+    if (view === 'logout') {
       setAuthenticatedUser(null);
+      setCurrentView('landing');
+      return;
     }
 
     setCurrentView(view);
