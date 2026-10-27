@@ -9,5 +9,29 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <script src="https://cdn.botpress.cloud/webchat/v5.0/inject.js"></script>
+    <script>
+      window.botpress.init({
+        botId: 'c76506c7-6b72-4197-8ea7-f30fc5e05e14',
+        clientId: '806cd6f7-5d38-4d4a-b306-71102580620d',
+        configuration: {
+          version: 'v2',
+          botName: 'Blood Donation Guide',
+          botDescription: 'Get help with blood donation questions, from eligibility and preparation to aftercare.',
+          color: '#b71c1c',
+          feedbackEnabled: true,
+          allowFileUpload: true,
+          soundEnabled: true,
+          conversationHistory: true,
+          homePageEnabled: true,
+          welcomeHeading: 'Questions about donating blood?',
+          welcomeSubtitle: 'Ask about donation requirements, preparation, safety, and aftercare.',
+          conversationStartersEnabled: false,
+          conversationStarters: [],
+          conversationStartersDisplayStyle: 'cards',
+          citationsEnabled: true,
+        },
+      });
+    </script>
   </body>
 </html>

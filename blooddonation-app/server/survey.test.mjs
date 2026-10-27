@@ -1,46 +1,16 @@
 import assert from 'node:assert/strict';
-import { after, mock, test } from 'node:test';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { after, test } from 'node:test';
 
-// The test server listens on its own port so it never clashes with a running dev server.
+// The test server uses its own port and a throwaway database so it never touches real data.
+const tempDir = mkdtempSync(join(tmpdir(), 'blooddonation-test-'));
 process.env.PORT = '3199';
-
-const inserted = [];
-let storedRow = null;
-
-// Stands in for MySQL so the API can be exercised without a database.
-const fakePool = {
-  async query(sql) {
-    if (sql.includes('SELECT id, answers, created_at')) {
-      return [storedRow ? [storedRow] : [], []];
-    }
-
-    if (sql.includes('SELECT id, user_id')) {
-      return [storedRow ? [{ id: storedRow.id, name: 'Jane Doe', eligibility_status: 'eligible' }] : [], []];
-    }
-
-    return [[], []];
-  },
-  async execute(sql, params) {
-    if (sql.includes('INSERT INTO survey_responses')) {
-      inserted.push({ sql, params });
-      storedRow = {
-        id: inserted.length,
-        answers: params[params.length - 1],
-        created_at: '2026-10-21 12:00:00',
-      };
-
-      return [{ insertId: inserted.length }, []];
-    }
-
-    return [[], []];
-  },
-};
-
-mock.module('mysql2/promise', {
-  exports: { default: { createPool: () => fakePool } },
-});
+process.env.DB_PATH = join(tempDir, 'test.db');
 
 const { server } = await import('./index.js');
+const { default: db } = await import('./db.js');
 await new Promise((resolve) => setTimeout(resolve, 300));
 
 const base = `http://127.0.0.1:${process.env.PORT}`;
@@ -78,7 +48,11 @@ const saveSurvey = async (payload) => {
   return { status: response.status, body: await response.json() };
 };
 
-after(() => server.close());
+after(() => {
+  server.close();
+  db.close();
+  rmSync(tempDir, { recursive: true, force: true });
+});
 
 test('a survey is saved with the decision the shared rules produce', async () => {
   const saved = await saveSurvey({ answers, userId: 7 });
@@ -86,18 +60,13 @@ test('a survey is saved with the decision the shared rules produce', async () =>
   assert.equal(saved.status, 201);
   assert.equal(saved.body.eligibility.status, 'ineligible');
   assert.equal(saved.body.eligibility.blockers[0].id, 'antibiotics');
-});
 
-test('the insert binds one value per placeholder', () => {
-  const { sql, params } = inserted[0];
-  const placeholders = (sql.match(/\?/g) || []).length;
-
-  assert.equal(placeholders, params.length);
-  assert.equal(params[0], 7, 'user id');
-  assert.equal(params[1], 'Jane Doe', 'name');
-  assert.equal(params[2], 30, 'age');
-  assert.equal(params[9], 'ineligible', 'eligibility status');
-  assert.equal(params[params.length - 1], JSON.stringify(answers), 'answers json');
+  const row = db.prepare('SELECT * FROM survey_responses WHERE id = ?').get(saved.body.id);
+  assert.equal(row.user_id, null, 'unknown users are stored anonymously');
+  assert.equal(row.name, 'Jane Doe');
+  assert.equal(row.age, 30);
+  assert.equal(row.eligibility_status, 'ineligible');
+  assert.equal(row.answers, JSON.stringify(answers));
 });
 
 test('reading the latest survey recomputes the eligibility from the stored answers', async () => {
@@ -111,7 +80,7 @@ test('reading the latest survey recomputes the eligibility from the stored answe
 });
 
 test('the list endpoint returns the stored responses', async () => {
-  const response = await fetch(`${base}/api/surveys?status=eligible`);
+  const response = await fetch(`${base}/api/surveys?status=ineligible`);
   const body = await response.json();
 
   assert.equal(response.status, 200);
@@ -133,4 +102,12 @@ test('a survey without the required details is rejected', async () => {
 
   assert.equal(missingAnswers.status, 400);
   assert.equal(badDetails.status, 400);
+});
+
+test('blood centers are seeded and can be listed with inventory', async () => {
+  const list = await (await fetch(`${base}/api/blood-centers`)).json();
+  assert.ok(list.centers.length >= 9);
+
+  const detail = await (await fetch(`${base}/api/blood-centers/${list.centers[0].id}/inventory`)).json();
+  assert.equal(detail.inventory.length, 8);
 });
