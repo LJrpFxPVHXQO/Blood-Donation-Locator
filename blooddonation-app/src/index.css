@@ -2036,17 +2036,12 @@ select {
   text-transform: uppercase;
   font-size: 0.66rem;
   font-weight: 600;
+  transition: background-color 0.2s ease;
 }
 
 .locator-city-select:hover,
 .locator-city-select.is-selected {
   background: #fff5f5;
-}
-
-.locator-chevron {
-  color: #444;
-  font-size: 0.9rem;
-  line-height: 0.8;
 }
 
 .locator-city-details {
@@ -2063,6 +2058,12 @@ select {
   color: #333;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   font-size: 0.65rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .locator-city-select {
+    transition: none;
+  }
 }
 
 .locator-city-details strong {

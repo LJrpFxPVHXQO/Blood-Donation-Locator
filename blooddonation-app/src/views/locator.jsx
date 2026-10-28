@@ -1,5 +1,6 @@
 ﻿import { useEffect, useState } from 'react';
 import { fetchBloodCenters, fetchBloodCenterInventory } from '../services/bloodCenterService';
+import { ChevronDown } from 'lucide-react';
 
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 
@@ -101,7 +102,7 @@ export default function Locator() {
                     <br />
                     <small style={{ opacity: 0.7 }}>{center.city} · {center.status} · {center.operating_hours || 'Hours not set'}</small>
                   </span>
-                  <span className="locator-chevron" aria-hidden="true">⌄</span>
+                  <ChevronDown className={expandedId === center.id ? 'faq-chevron is-open' : 'faq-chevron'} size={16} aria-hidden="true" />
                 </button>
                 {expandedId === center.id && (
                   <div className="locator-city-details" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
