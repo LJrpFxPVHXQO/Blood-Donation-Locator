@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 .tools/
 .tools/
+
+# Java live tracking service build output and runtime data
+tracking-service-java/build/
+tracking-service-java/data/

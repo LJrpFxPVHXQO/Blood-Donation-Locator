@@ -19,7 +19,8 @@ const loadSessionUser = () => {
 };
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing');
+  // Always start on the login screen; the landing page stays reachable from there.
+  const [currentView, setCurrentView] = useState('login');
   const [authenticatedUser, setAuthenticatedUser] = useState(loadSessionUser);
   const [eligibility, setEligibility] = useState(() => loadStoredEligibility());
   const [profileDetails, setProfileDetails] = useState({
@@ -80,7 +81,7 @@ export default function App() {
   const handleNavigate = (view) => {
     if (view === 'logout') {
       setAuthenticatedUser(null);
-      setCurrentView('landing');
+      setCurrentView('login');
       return;
     }
 
@@ -109,7 +110,7 @@ export default function App() {
         onHome={() => setCurrentView('landing')}
         onAuthenticated={(user) => {
           setAuthenticatedUser(user);
-          setCurrentView('landing');
+          setCurrentView('home');
         }}
       />
     );

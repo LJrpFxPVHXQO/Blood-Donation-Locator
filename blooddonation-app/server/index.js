@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
 import express from 'express';
-import db, { bloodTypes } from './db.js';
+import db from './db.js';
 import { evaluateEligibility } from '../src/services/eligibility.js';
 
 const app = express();
@@ -211,137 +211,9 @@ app.get('/api/surveys', (request, response) => {
   }
 });
 
-// Blood center live tracking APIs
-const listCenters = db.prepare(
-  'SELECT * FROM blood_centers WHERE ? IS NULL OR city = ? ORDER BY name ASC',
-);
-const findCenterById = db.prepare('SELECT * FROM blood_centers WHERE id = ? LIMIT 1');
-const listInventory = db.prepare(
-  `SELECT blood_type, units_available, units_reserved, critical_threshold, last_updated
-     FROM blood_inventory WHERE center_id = ? ORDER BY blood_type ASC`,
-);
-const insertCenter = db.prepare(
-  `INSERT INTO blood_centers (name, city, address, contact, latitude, longitude, status, operating_hours)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-);
-const insertEmptyStock = db.prepare(
-  'INSERT INTO blood_inventory (center_id, blood_type, units_available) VALUES (?, ?, 0)',
-);
-const upsertInventory = db.prepare(
-  `INSERT INTO blood_inventory (center_id, blood_type, units_available, units_reserved, critical_threshold)
-   VALUES (?, ?, ?, ?, ?)
-   ON CONFLICT(center_id, blood_type) DO UPDATE SET
-     units_available = excluded.units_available,
-     units_reserved = excluded.units_reserved,
-     critical_threshold = excluded.critical_threshold,
-     last_updated = CURRENT_TIMESTAMP`,
-);
-
-app.get('/api/blood-centers', (request, response) => {
-  const city = cleanText(request.query.city, 120);
-
-  try {
-    return response.json({ centers: listCenters.all(city, city) });
-  } catch (error) {
-    console.error('Unable to list blood centers:', error);
-    return response.status(500).json({ message: 'Unable to list blood centers.' });
-  }
-});
-
-app.get('/api/blood-centers/:id/inventory', (request, response) => {
-  const centerId = Number(request.params.id);
-
-  if (!Number.isInteger(centerId) || centerId < 1) {
-    return response.status(400).json({ message: 'Invalid blood center ID.' });
-  }
-
-  try {
-    const center = findCenterById.get(centerId);
-    if (!center) {
-      return response.status(404).json({ message: 'Blood center not found.' });
-    }
-
-    const inventory = listInventory.all(centerId);
-
-    return response.json({
-      center,
-      inventory,
-      lastUpdated: inventory.length ? inventory[0].last_updated : center.last_updated,
-    });
-  } catch (error) {
-    console.error('Unable to fetch blood center inventory:', error);
-    return response.status(500).json({ message: 'Unable to fetch blood center inventory.' });
-  }
-});
-
-app.post('/api/blood-centers', (request, response) => {
-  const name = cleanText(request.body?.name, 150);
-  const city = cleanText(request.body?.city, 120);
-  const address = cleanText(request.body?.address, 255);
-  const contact = cleanText(request.body?.contact, 60);
-  const status = cleanText(request.body?.status, 20) || 'open';
-  const operatingHours = cleanText(request.body?.operating_hours, 100);
-  const latitude = request.body?.latitude != null ? Number(request.body.latitude) : null;
-  const longitude = request.body?.longitude != null ? Number(request.body.longitude) : null;
-
-  if (!name || !city) {
-    return response.status(400).json({ message: 'Name and city are required.' });
-  }
-
-  try {
-    db.exec('BEGIN');
-    try {
-      const result = insertCenter.run(name, city, address, contact, latitude, longitude, status, operatingHours);
-      const id = Number(result.lastInsertRowid);
-      bloodTypes.forEach((bloodType) => insertEmptyStock.run(id, bloodType));
-      db.exec('COMMIT');
-      return response.status(201).json({ message: 'Blood center created.', id });
-    } catch (error) {
-      db.exec('ROLLBACK');
-      throw error;
-    }
-  } catch (error) {
-    if (error && /UNIQUE constraint failed/i.test(error.message)) {
-      return response.status(409).json({ message: 'That blood center already exists in this city.' });
-    }
-
-    console.error('Unable to create blood center:', error);
-    return response.status(500).json({ message: 'Unable to create blood center.' });
-  }
-});
-
-app.put('/api/blood-inventory', (request, response) => {
-  const centerId = Number(request.body?.center_id);
-  const bloodType = cleanText(request.body?.blood_type, 10);
-  const unitsAvailable = Number(request.body?.units_available);
-  const unitsReserved = Number(request.body?.units_reserved) || 0;
-  const criticalThreshold = Number(request.body?.critical_threshold) || 5;
-
-  if (!Number.isInteger(centerId) || centerId < 1 || !bloodType || !Number.isFinite(unitsAvailable) || unitsAvailable < 0) {
-    return response.status(400).json({ message: 'Valid center_id, blood_type, and non-negative units_available are required.' });
-  }
-
-  try {
-    if (!findCenterById.get(centerId)) {
-      return response.status(404).json({ message: 'Blood center not found.' });
-    }
-
-    upsertInventory.run(
-      centerId,
-      bloodType,
-      Math.round(unitsAvailable),
-      Math.round(unitsReserved),
-      Math.round(criticalThreshold),
-    );
-    return response.json({ message: 'Inventory updated.' });
-  } catch (error) {
-    console.error('Unable to update blood inventory:', error);
-    return response.status(500).json({ message: 'Unable to update blood inventory.' });
-  }
-});
-
 const server = app.listen(port, '127.0.0.1', () => {
-  console.log(`Authentication API listening on http://127.0.0.1:${port}`);
+  console.log(`Authentication and survey API listening on http://127.0.0.1:${port}`);
+  console.log('Live blood center tracking is served by the Java service on port 3002.');
 });
 
 export { app, server };

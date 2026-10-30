@@ -4,8 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently \"npm run server\" \"vite\"",
+    "dev": "concurrently \"npm run server\" \"npm run tracking\" \"vite\"",
     "server": "node server/index.js",
+    "tracking": "node scripts/run-tracking.js",
     "seed": "node server/seed.js",
     "build": "vite build",
     "lint": "eslint .",

@@ -1,4 +1,6 @@
-const API_BASE = import.meta.env.VITE_API_BASE || '';
+// These calls are handled by the Java live tracking service. In development Vite
+// proxies them to http://127.0.0.1:3002; set VITE_TRACKING_API_BASE to call it directly.
+const API_BASE = import.meta.env.VITE_TRACKING_API_BASE || '';
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, {
