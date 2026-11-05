@@ -43,6 +43,7 @@ const loadSessionUser = () => {
 };
 
 export default function App() {
+  // Always start on the landing page; the login screen remains available there.
   const [currentView, setCurrentView] = useState('landing');
   const [authenticatedUser, setAuthenticatedUser] = useState(loadSessionUser);
   const [surveyCompletion, setSurveyCompletion] = useState(() => {
@@ -110,6 +111,7 @@ export default function App() {
     };
   }, []);
 
+  // Keep the login across reloads.
   useEffect(() => {
     try {
       if (authenticatedUser) {
