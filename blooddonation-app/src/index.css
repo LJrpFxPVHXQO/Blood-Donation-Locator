@@ -28,9 +28,15 @@ body {
 /* Landing page */
 .landing-site {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: #fff;
   color: #181818;
   font-family: 'Inter Variable', Inter, sans-serif;
+}
+
+.landing-site > main {
+  flex: 1;
 }
 
 .auth-page {

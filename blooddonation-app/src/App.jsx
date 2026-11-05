@@ -196,6 +196,7 @@ export default function App() {
         onHome={() => setCurrentView('landing')}
         onLogin={() => setCurrentView('login')}
         onDashboard={() => setCurrentView('home')}
+        onFindCenter={() => setCurrentView('locator')}
         isAuthenticated={Boolean(authenticatedUser)}
       />
     );
