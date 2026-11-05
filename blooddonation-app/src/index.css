@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --bg-page: #fce4ec;
   --bg-card: #ffffff;
   --primary-red: #b71c1c;
@@ -1286,6 +1286,125 @@ select {
   margin: 0 0 0.85rem;
   color: rgba(255, 255, 255, 0.9);
   font-size: 0.72rem;
+}
+
+.survey-gate-notice {
+  display: grid;
+  gap: 0.25rem;
+  margin: 1rem 0;
+  padding: 1rem 1.1rem;
+  border: 2px solid rgba(255, 255, 255, 0.7);
+  border-left: 0.4rem solid #ffcdd2;
+  border-radius: 0.55rem;
+  background: rgba(35, 0, 0, 0.35);
+  color: white;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.survey-gate-notice strong {
+  font-size: 1.1rem;
+}
+
+.survey-required-card {
+  width: min(100%, 42rem);
+  padding: clamp(1.6rem, 5vw, 2.8rem);
+  text-align: center;
+}
+
+.survey-required-icon {
+  display: grid;
+  width: 4.5rem;
+  height: 4.5rem;
+  place-items: center;
+  margin: 0 auto 1.1rem;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.survey-required-card .help-eyebrow {
+  margin-bottom: 0.7rem;
+  font-size: 0.75rem;
+}
+
+.survey-required-card h1 {
+  margin-bottom: 0.9rem;
+  font-size: clamp(1.8rem, 5vw, 2.4rem);
+}
+
+.survey-required-message,
+.survey-required-details {
+  max-width: 34rem;
+  margin: 0 auto;
+  color: rgba(255, 255, 255, 0.95);
+  font-size: clamp(1rem, 2.6vw, 1.15rem);
+  line-height: 1.65;
+}
+
+.survey-required-message strong {
+  color: white;
+  text-decoration: underline;
+  text-decoration-color: #ffcdd2;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.survey-required-details {
+  margin-top: 0.7rem;
+  font-size: 0.95rem;
+}
+
+.survey-required-actions {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  margin-top: 1.7rem;
+}
+
+.survey-required-start,
+.survey-required-defer {
+  display: inline-flex;
+  min-height: 3.2rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.survey-required-start {
+  width: min(100%, 23rem);
+  padding: 0.75rem 1.25rem;
+  border: 2px solid white;
+  background: white;
+  color: #76090d;
+}
+
+.survey-required-start:hover {
+  background: #ffebee;
+}
+
+.survey-required-defer {
+  padding: 0.5rem 1.25rem;
+  border: 2px solid transparent;
+  background: transparent;
+  color: white;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.survey-required-defer:hover {
+  border-color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.survey-required-start:focus-visible,
+.survey-required-defer:focus-visible {
+  outline: 3px solid #ffcdd2;
+  outline-offset: 3px;
 }
 
 .faq-list {

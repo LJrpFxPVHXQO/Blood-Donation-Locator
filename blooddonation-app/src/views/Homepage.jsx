@@ -14,7 +14,18 @@ import Locator from './locator';
 import Survey from './Survey';
 import Emergency from './Emergency';
 
-export default function Homepage({ onNavigate, currentView = 'home', profile, onEligibilityChange, userId, children }) {
+export default function Homepage({
+  onNavigate,
+  currentView = 'home',
+  profile,
+  onEligibilityChange,
+  userId,
+  requiredFeature,
+  onSurveyComplete,
+  onContinueToFeature,
+  onDeferRequiredFeature,
+  children,
+}) {
   const isHelpSection = currentView === 'help' || currentView === 'survey';
   const isProfileSection = currentView === 'profile' || currentView === 'edit-profile';
   const isEligibilitySection = currentView === 'eligibility';
@@ -159,7 +170,7 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, on
                 <button
                   className="profile-action profile-edit"
                   onClick={() => {
-                    onNavigate('profile');
+                    onNavigate('edit-profile');
                     setShowProfile(false);
                   }}
                 >
@@ -246,6 +257,10 @@ export default function Homepage({ onNavigate, currentView = 'home', profile, on
                 onNavigate={onNavigate}
                 onEligibilityChange={onEligibilityChange}
                 userId={userId}
+                requiredFeature={requiredFeature}
+                onSurveyComplete={onSurveyComplete}
+                onContinueToFeature={onContinueToFeature}
+                onDeferRequiredFeature={onDeferRequiredFeature}
               />
             )}
             {currentView === 'help' && <Help onNavigate={onNavigate} />}

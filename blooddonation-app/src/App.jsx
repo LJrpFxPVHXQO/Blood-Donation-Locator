@@ -9,6 +9,17 @@ import { loadStoredEligibility, storeEligibility } from './services/eligibility'
 import { fetchLatestSurvey } from './services/surveyApi';
 
 const SESSION_KEY = 'blooddonate.session';
+const SURVEY_COMPLETION_KEY = 'blooddonate.survey-completed';
+
+const getSurveyUserKey = (user) => String(user?.id ?? user?.email ?? 'anonymous');
+
+const hasStoredSurveyCompletion = (userKey) => {
+  try {
+    return window.localStorage.getItem(`${SURVEY_COMPLETION_KEY}.${userKey}`) === 'true';
+  } catch {
+    return false;
+  }
+};
 
 const loadSessionUser = () => {
   try {
@@ -22,6 +33,12 @@ export default function App() {
   // Always start on the login screen; the landing page stays reachable from there.
   const [currentView, setCurrentView] = useState('login');
   const [authenticatedUser, setAuthenticatedUser] = useState(loadSessionUser);
+  const [surveyCompletion, setSurveyCompletion] = useState(() => {
+    const userKey = getSurveyUserKey(loadSessionUser());
+    return { userKey, completed: hasStoredSurveyCompletion(userKey) };
+  });
+  const [pendingRestrictedView, setPendingRestrictedView] = useState(null);
+  const [viewBeforeSurveyGate, setViewBeforeSurveyGate] = useState('home');
   const [eligibility, setEligibility] = useState(() => loadStoredEligibility());
   const [profileDetails, setProfileDetails] = useState({
     name: 'John A. Doe',
@@ -46,6 +63,9 @@ export default function App() {
     () => (eligibility ? { ...profileDetails, status: eligibility.shortLabel } : profileDetails),
     [profileDetails, eligibility],
   );
+  const surveyUserKey = getSurveyUserKey(authenticatedUser);
+  const hasCompletedSurvey =
+    surveyCompletion.userKey === surveyUserKey && surveyCompletion.completed;
 
   // Pull the result that was saved on the server, and keep it on the device as a fallback.
   useEffect(() => {
@@ -81,11 +101,52 @@ export default function App() {
   const handleNavigate = (view) => {
     if (view === 'logout') {
       setAuthenticatedUser(null);
+      const userKey = 'anonymous';
+      setSurveyCompletion({
+        userKey,
+        completed: hasStoredSurveyCompletion(userKey),
+      });
+      setPendingRestrictedView(null);
+      setViewBeforeSurveyGate('home');
       setCurrentView('login');
       return;
     }
 
+    if ((view === 'edit-profile' || view === 'emergency') && !hasCompletedSurvey) {
+      setViewBeforeSurveyGate(currentView);
+      setPendingRestrictedView(view);
+      setCurrentView('survey');
+      return;
+    }
+
+    if (view !== 'survey') {
+      setPendingRestrictedView(null);
+    }
     setCurrentView(view);
+  };
+
+  const handleSurveyComplete = () => {
+    setSurveyCompletion({ userKey: surveyUserKey, completed: true });
+    try {
+      window.localStorage.setItem(`${SURVEY_COMPLETION_KEY}.${surveyUserKey}`, 'true');
+    } catch {
+      // The completed survey remains available for this session if storage is unavailable.
+    }
+  };
+
+  const continueToRestrictedView = () => {
+    if (!pendingRestrictedView) {
+      return;
+    }
+
+    const view = pendingRestrictedView;
+    setPendingRestrictedView(null);
+    setCurrentView(view);
+  };
+
+  const deferRestrictedView = () => {
+    setPendingRestrictedView(null);
+    setCurrentView(viewBeforeSurveyGate);
   };
 
   const handleEligibilityChange = (result) => {
@@ -110,6 +171,11 @@ export default function App() {
         onHome={() => setCurrentView('landing')}
         onAuthenticated={(user) => {
           setAuthenticatedUser(user);
+          const userKey = getSurveyUserKey(user);
+          setSurveyCompletion({
+            userKey,
+            completed: hasStoredSurveyCompletion(userKey),
+          });
           setCurrentView('home');
         }}
       />
@@ -125,17 +191,21 @@ export default function App() {
           profile={profile}
           onEligibilityChange={handleEligibilityChange}
           userId={authenticatedUser?.id}
+          requiredFeature={pendingRestrictedView}
+          onSurveyComplete={handleSurveyComplete}
+          onContinueToFeature={continueToRestrictedView}
+          onDeferRequiredFeature={deferRestrictedView}
         >
           {currentView === 'profile' && (
-            <Profile profile={profile} onEdit={() => setCurrentView('edit-profile')} />
+            <Profile profile={profile} onEdit={() => handleNavigate('edit-profile')} />
           )}
           {currentView === 'edit-profile' && (
             <EditProfile
               profile={profile}
-              onCancel={() => setCurrentView('profile')}
+              onCancel={() => handleNavigate('profile')}
               onSave={(updatedProfile) => {
                 setProfileDetails(updatedProfile);
-                setCurrentView('profile');
+                handleNavigate('profile');
               }}
             />
           )}

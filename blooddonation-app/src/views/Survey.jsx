@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react';
 import EligibilityResult from '../components/EligibilityResult';
 import { evaluateEligibility } from '../services/eligibility';
 import { submitSurvey } from '../services/surveyApi';
+import { ArrowRight, ClipboardCheck } from 'lucide-react';
 
 const yesNo = ['Yes', 'No'];
 const yesNoUnsure = ['Yes', 'No', 'Not sure'];
@@ -183,11 +184,25 @@ function ChoiceGroup({
   );
 }
 
-export default function Survey({ onNavigate, onEligibilityChange, userId }) {
+const restrictedFeatureLabels = {
+  'edit-profile': 'Edit Profile',
+  emergency: 'Emergency',
+};
+
+export default function Survey({
+  onNavigate,
+  onEligibilityChange,
+  userId,
+  requiredFeature,
+  onSurveyComplete,
+  onContinueToFeature,
+  onDeferRequiredFeature,
+}) {
   const [answers, setAnswers] = useState(initialAnswers);
   const [step, setStep] = useState(0);
   const [errors, setErrors] = useState([]);
   const [submitted, setSubmitted] = useState(false);
+  const [isTakingRequiredSurvey, setIsTakingRequiredSurvey] = useState(false);
   const panelRef = useRef(null);
 
   const isLastStep = step === steps.length - 1;
@@ -312,6 +327,7 @@ export default function Survey({ onNavigate, onEligibilityChange, userId }) {
     if (isLastStep) {
       setSubmitted(true);
       onEligibilityChange?.(evaluation);
+      onSurveyComplete?.();
       submitSurvey(answers, userId);
       requestAnimationFrame(() => {
         panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -324,6 +340,40 @@ export default function Survey({ onNavigate, onEligibilityChange, userId }) {
 
   const hasError = (field) => errors.includes(field);
 
+  if (requiredFeature && !isTakingRequiredSurvey && !submitted) {
+    return (
+      <section className="help-card-panel survey-required-card" aria-labelledby="survey-required-title">
+        <div className="survey-required-icon" aria-hidden="true">
+          <ClipboardCheck size={30} />
+        </div>
+        <span className="help-eyebrow">ACTION REQUIRED</span>
+        <h1 id="survey-required-title">Survey required</h1>
+        <p className="survey-required-message">
+          To access <strong>{restrictedFeatureLabels[requiredFeature]}</strong>, please complete the donor
+          survey first.
+        </p>
+        <p className="survey-required-details">
+          The survey helps us understand your donor information and health history. You can start now or
+          come back to it later; {restrictedFeatureLabels[requiredFeature]} will remain unavailable until it
+          is complete.
+        </p>
+        <div className="survey-required-actions">
+          <button
+            className="survey-required-start"
+            type="button"
+            onClick={() => setIsTakingRequiredSurvey(true)}
+          >
+            Take the survey now
+            <ArrowRight size={19} aria-hidden="true" />
+          </button>
+          <button className="survey-required-defer" type="button" onClick={onDeferRequiredFeature}>
+            Not now
+          </button>
+        </div>
+      </section>
+    );
+  }
+
   if (submitted) {
     return (
       <section className="help-card-panel survey-panel" aria-labelledby="survey-title" ref={panelRef}>
@@ -332,6 +382,11 @@ export default function Survey({ onNavigate, onEligibilityChange, userId }) {
         <p className="help-intro">
           Your answers were screened against our donation requirements. Here is your result.
         </p>
+        {requiredFeature && (
+          <p className="survey-gate-notice" role="status">
+            You can now continue to {restrictedFeatureLabels[requiredFeature]}.
+          </p>
+        )}
 
         <EligibilityResult evaluation={evaluation} />
 
@@ -348,6 +403,11 @@ export default function Survey({ onNavigate, onEligibilityChange, userId }) {
           >
             Submit another response
           </button>
+          {requiredFeature && (
+            <button className="survey-back" type="button" onClick={onContinueToFeature}>
+              Continue to {restrictedFeatureLabels[requiredFeature]}
+            </button>
+          )}
           {onNavigate && (
             <button className="survey-back" type="button" onClick={() => onNavigate('home')}>
               Back to dashboard
@@ -363,6 +423,12 @@ export default function Survey({ onNavigate, onEligibilityChange, userId }) {
       <span className="help-eyebrow">BLOOD DONATION SURVEY</span>
       <h1 id="survey-title">Blood Donation Survey</h1>
       <p className="help-intro">Share your experience to help us improve the blood donation process.</p>
+      {requiredFeature && (
+        <p className="survey-gate-notice" role="status">
+          <strong>Required to access {restrictedFeatureLabels[requiredFeature]}.</strong>
+          <span>Complete all required survey questions, then continue to that feature.</span>
+        </p>
+      )}
 
       <div className="survey-progress">
         <div
