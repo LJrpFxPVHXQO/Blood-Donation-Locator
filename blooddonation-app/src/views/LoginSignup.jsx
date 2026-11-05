@@ -114,7 +114,6 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
               {isSigningUp ? 'Log in' : 'Sign up'}
             </button>
           </p>
-          <button className="auth-home-link" type="button" onClick={onHome}>Back to home</button>
         </form>
       </section>
     </main>
