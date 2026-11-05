@@ -61,7 +61,7 @@ export default function Profile({ profile, onEdit }) {
         </section>
 
         <section className="profile-section">
-          <h3 className="section-title">Contact info</h3>
+          <h3 className="section-title">Contact information</h3>
           <div className="section-body">
             {contactInfo.length ? (
               contactInfo.map(([label, value]) => <div key={label}>{label}: {value}</div>)

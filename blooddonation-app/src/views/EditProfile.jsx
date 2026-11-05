@@ -63,7 +63,7 @@ export default function EditProfile({ profile, onCancel, onSave }) {
 
         <form className="profile-edit-form" onSubmit={handleSubmit}>
           <section className="profile-section">
-            <h2 className="section-title">Contact info</h2>
+            <h2 className="section-title">Contact information</h2>
             <div className="profile-edit-fields">
               <label className="profile-edit-field">
                 <span>Phone</span>
