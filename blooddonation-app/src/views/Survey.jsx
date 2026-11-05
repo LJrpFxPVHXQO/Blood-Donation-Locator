@@ -250,7 +250,7 @@ export default function Survey({
     if (!evaluation.complete) {
       return {
         status: 'pending',
-        label: 'Checking your answers',
+        label: ' Checking your answers',
         detail: `${pendingCount} question${pendingCount === 1 ? '' : 's'} left to check your eligibility.`,
       };
     }
@@ -454,7 +454,7 @@ export default function Survey({
         role="status"
         aria-live="polite"
       >
-        <span className="eligibility-preview-label">Donation eligibility</span>
+        <span className="eligibility-preview-label">        Donation eligibility</span>{' '}
         <strong className="eligibility-preview-value">{preview.label}</strong>
         <p className="eligibility-preview-text">{preview.detail}</p>
       </div>

@@ -65,7 +65,7 @@ export default function Homepage({
     { label: 'Emergency requests', view: 'emergency' },
     { label: 'Back to landing page', view: 'landing' },
   ];
-  const profileName = profile?.name?.trim() || 'John Doe';
+  const profileName = profile?.name?.trim() || profile?.email?.split('@')[0] || 'Donor';
   const profileInitials = profileName
     .split(/\s+/)
     .slice(0, 2)

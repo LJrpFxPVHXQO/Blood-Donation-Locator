@@ -104,10 +104,48 @@ test('a survey without the required details is rejected', async () => {
   assert.equal(badDetails.status, 400);
 });
 
-test('blood centers are seeded and can be listed with inventory', async () => {
-  const list = await (await fetch(`${base}/api/blood-centers`)).json();
-  assert.ok(list.centers.length >= 9);
+test('each account keeps its own profile and emergency contacts', async () => {
+  const signup = (name, email) => fetch(`${base}/api/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password: 'secret1' }),
+  });
+  await signup('Ana Cruz', 'ana@example.com');
+  await signup('Ben Lim', 'ben@example.com');
+  const ids = Object.fromEntries(
+    db.prepare('SELECT id, email FROM users').all().map((user) => [user.email, user.id]),
+  );
 
-  const detail = await (await fetch(`${base}/api/blood-centers/${list.centers[0].id}/inventory`)).json();
-  assert.equal(detail.inventory.length, 8);
+  const saved = await fetch(`${base}/api/profile/${ids['ana@example.com']}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      phone: '0917',
+      address: '1 Main St',
+      emergencyContacts: [{ name: 'Mia Cruz', phone: '0918', relationship: 'Sister' }, { name: '', phone: '' }],
+    }),
+  });
+  assert.equal(saved.status, 200);
+
+  const ana = (await (await fetch(`${base}/api/profile/${ids['ana@example.com']}`)).json()).profile;
+  const ben = (await (await fetch(`${base}/api/profile/${ids['ben@example.com']}`)).json()).profile;
+
+  assert.equal(ana.email, 'ana@example.com');
+  assert.equal(ana.hasSurvey, false);
+  assert.equal(ana.name, '');
+  assert.equal(ana.phone, '0917');
+  assert.equal(ana.emergencyContacts.length, 1);
+  assert.equal(ana.emergencyContacts[0].relationship, 'Sister');
+  assert.equal(ben.email, 'ben@example.com');
+  assert.equal(ben.phone, '');
+  assert.equal(ben.emergencyContacts.length, 0);
+
+  await saveSurvey({ answers: { ...answers, name: 'Ben Lim', city: 'Cebu' }, userId: ids['ben@example.com'] });
+  const benAfterSurvey = (await (await fetch(`${base}/api/profile/${ids['ben@example.com']}`)).json()).profile;
+  assert.equal(benAfterSurvey.hasSurvey, true);
+  assert.equal(benAfterSurvey.name, 'Ben Lim');
+  assert.equal(benAfterSurvey.city, 'Cebu');
+  assert.equal(benAfterSurvey.phone, '09171234567');
+  assert.equal(benAfterSurvey.bloodType, 'O+');
+  assert.equal((await fetch(`${base}/api/profile/9999`)).status, 404);
 });

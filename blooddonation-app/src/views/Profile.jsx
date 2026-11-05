@@ -1,11 +1,24 @@
 import { Edit3 } from 'lucide-react';
 
 export default function Profile({ profile, onEdit }) {
-  const initials = (profile?.name || 'JD')
+  const displayName = profile?.name || '';
+  const initials = (displayName || profile?.email || '?')
     .split(/\s+/)
     .slice(0, 2)
     .map((p) => p[0]?.toUpperCase())
     .join('');
+
+  const personalInfo = [
+    ['Full name', profile?.name],
+    ['Age', profile?.age],
+    ['Gender', profile?.gender],
+    ['City', profile?.city],
+    ['Occupation', profile?.occupation],
+  ].filter(([, value]) => value);
+  const contactInfo = [
+    ['Phone', profile?.phone],
+    ['Address', profile?.address],
+  ].filter(([, value]) => value);
 
   return (
     <main className="profile-page profile-view">
@@ -16,12 +29,15 @@ export default function Profile({ profile, onEdit }) {
               {initials}
             </div>
             <div className="profile-meta">
-              <div className="profile-line">
-                <strong className="profile-name">{profile?.name}</strong>
-              </div>
+              {displayName && (
+                <div className="profile-line">
+                  <strong className="profile-name">{displayName}</strong>
+                </div>
+              )}
               <div className="profile-line">Donor ID: {profile?.donorId}</div>
-              <div className="profile-line">Blood Type: {profile?.bloodType}</div>
-              <div className="profile-line">Status: {profile?.status}</div>
+              <div className="profile-line">Email: {profile?.email}</div>
+              {profile?.bloodType && <div className="profile-line">Blood Type: {profile.bloodType}</div>}
+              {profile?.hasSurvey && <div className="profile-line">Status: {profile.status}</div>}
             </div>
           </div>
 
@@ -36,16 +52,22 @@ export default function Profile({ profile, onEdit }) {
         <section className="profile-section">
           <h3 className="section-title">Personal information</h3>
           <div className="section-body">
-            <div>Full name: {profile?.name}</div>
-            <div>Date of Birth: {profile?.dateOfBirth}</div>
+            {personalInfo.length ? (
+              personalInfo.map(([label, value]) => <div key={label}>{label}: {value}</div>)
+            ) : (
+              <div className="muted">No personal information added.</div>
+            )}
           </div>
         </section>
 
         <section className="profile-section">
-          <h3 className="section-title">Contact info</h3>
+          <h3 className="section-title">Contact information</h3>
           <div className="section-body">
-            <div>Phone: {profile?.phone}</div>
-            <div>Address: {profile?.address}</div>
+            {contactInfo.length ? (
+              contactInfo.map(([label, value]) => <div key={label}>{label}: {value}</div>)
+            ) : (
+              <div className="muted">No contact information added.</div>
+            )}
           </div>
         </section>
 

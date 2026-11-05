@@ -7,6 +7,7 @@ import LoginSignup from './views/LoginSignup';
 import Profile from './views/Profile';
 import { loadStoredEligibility, storeEligibility } from './services/eligibility';
 import { fetchLatestSurvey } from './services/surveyApi';
+import { fetchProfile, saveProfile } from './services/profileApi';
 
 const SESSION_KEY = 'blooddonate.session';
 const SURVEY_COMPLETION_KEY = 'blooddonate.survey-completed';
@@ -21,6 +22,18 @@ const hasStoredSurveyCompletion = (userKey) => {
   }
 };
 
+const blankProfile = (user) => ({
+  name: '',
+  email: user?.email || '',
+  donorId: user?.id ? String(user.id).padStart(3, '0') : '',
+  hasSurvey: false,
+  bloodType: '',
+  status: 'Active',
+  phone: '',
+  address: '',
+  emergencyContacts: [],
+});
+
 const loadSessionUser = () => {
   try {
     return JSON.parse(window.localStorage.getItem(SESSION_KEY))?.user || null;
@@ -30,8 +43,7 @@ const loadSessionUser = () => {
 };
 
 export default function App() {
-  // Always start on the login screen; the landing page stays reachable from there.
-  const [currentView, setCurrentView] = useState('login');
+  const [currentView, setCurrentView] = useState('landing');
   const [authenticatedUser, setAuthenticatedUser] = useState(loadSessionUser);
   const [surveyCompletion, setSurveyCompletion] = useState(() => {
     const userKey = getSurveyUserKey(loadSessionUser());
@@ -40,34 +52,47 @@ export default function App() {
   const [pendingRestrictedView, setPendingRestrictedView] = useState(null);
   const [viewBeforeSurveyGate, setViewBeforeSurveyGate] = useState('home');
   const [eligibility, setEligibility] = useState(() => loadStoredEligibility());
-  const [profileDetails, setProfileDetails] = useState({
-    name: 'John A. Doe',
-    donorId: '001',
-    dateOfBirth: '1/1/2001',
-    bloodType: 'A+',
-    status: 'Active',
-    phone: '0954778899',
-    address: '123 Street Town City',
-    emergencyContacts: [
-      {
-        id: 1,
-        name: 'Jane B. Doe',
-        phone: '09658899911',
-        relationship: 'Wife',
-      },
-    ],
-  });
+  const [profileDetails, setProfileDetails] = useState(() => blankProfile(loadSessionUser()));
 
-  // The donor status follows the latest survey result.
+  const userId = authenticatedUser?.id;
+  const onProfileView = currentView === 'profile';
+  const surveyUserKey = getSurveyUserKey(authenticatedUser);
+
+  useEffect(() => {
+    if (!userId) {
+      return undefined;
+    }
+
+    let active = true;
+    fetchProfile(userId).then((savedProfile) => {
+      if (!active || !savedProfile) {
+        return;
+      }
+
+      setProfileDetails((current) => ({ ...current, ...savedProfile }));
+      if (savedProfile.hasSurvey) {
+        setSurveyCompletion({ userKey: surveyUserKey, completed: true });
+        try {
+          window.localStorage.setItem(`${SURVEY_COMPLETION_KEY}.${surveyUserKey}`, 'true');
+        } catch {
+          // Keep the server-provided completion state for this session.
+        }
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [userId, onProfileView, surveyUserKey]);
+
   const profile = useMemo(
     () => (eligibility ? { ...profileDetails, status: eligibility.shortLabel } : profileDetails),
     [profileDetails, eligibility],
   );
-  const surveyUserKey = getSurveyUserKey(authenticatedUser);
   const hasCompletedSurvey =
-    surveyCompletion.userKey === surveyUserKey && surveyCompletion.completed;
+    (surveyCompletion.userKey === surveyUserKey && surveyCompletion.completed) ||
+    profileDetails.hasSurvey;
 
-  // Pull the result that was saved on the server, and keep it on the device as a fallback.
   useEffect(() => {
     let active = true;
 
@@ -85,7 +110,6 @@ export default function App() {
     };
   }, []);
 
-  // Keep the login across reloads; the app always opens on the landing page.
   useEffect(() => {
     try {
       if (authenticatedUser) {
@@ -101,14 +125,14 @@ export default function App() {
   const handleNavigate = (view) => {
     if (view === 'logout') {
       setAuthenticatedUser(null);
-      const userKey = 'anonymous';
+      setProfileDetails(blankProfile(null));
       setSurveyCompletion({
-        userKey,
-        completed: hasStoredSurveyCompletion(userKey),
+        userKey: 'anonymous',
+        completed: hasStoredSurveyCompletion('anonymous'),
       });
       setPendingRestrictedView(null);
       setViewBeforeSurveyGate('home');
-      setCurrentView('login');
+      setCurrentView('landing');
       return;
     }
 
@@ -127,6 +151,7 @@ export default function App() {
 
   const handleSurveyComplete = () => {
     setSurveyCompletion({ userKey: surveyUserKey, completed: true });
+    setProfileDetails((current) => ({ ...current, hasSurvey: true }));
     try {
       window.localStorage.setItem(`${SURVEY_COMPLETION_KEY}.${surveyUserKey}`, 'true');
     } catch {
@@ -147,6 +172,17 @@ export default function App() {
   const deferRestrictedView = () => {
     setPendingRestrictedView(null);
     setCurrentView(viewBeforeSurveyGate);
+  };
+
+  const handleProfileSave = async (updatedProfile) => {
+    try {
+      const savedProfile = await saveProfile(userId, updatedProfile);
+      setProfileDetails((current) => ({ ...current, ...savedProfile }));
+    } catch {
+      setProfileDetails(updatedProfile);
+    }
+
+    setCurrentView('profile');
   };
 
   const handleEligibilityChange = (result) => {
@@ -171,6 +207,7 @@ export default function App() {
         onHome={() => setCurrentView('landing')}
         onAuthenticated={(user) => {
           setAuthenticatedUser(user);
+          setProfileDetails(blankProfile(user));
           const userKey = getSurveyUserKey(user);
           setSurveyCompletion({
             userKey,
@@ -203,10 +240,7 @@ export default function App() {
             <EditProfile
               profile={profile}
               onCancel={() => handleNavigate('profile')}
-              onSave={(updatedProfile) => {
-                setProfileDetails(updatedProfile);
-                handleNavigate('profile');
-              }}
+              onSave={handleProfileSave}
             />
           )}
           {currentView === 'eligibility' && (

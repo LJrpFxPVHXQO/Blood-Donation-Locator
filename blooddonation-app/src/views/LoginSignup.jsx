@@ -29,11 +29,6 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
       return;
     }
 
-    if (!isSigningUp && formValues.email === 'test' && formValues.password === 'test') {
-      onAuthenticated({ id: 'debug-test', name: 'Test User', email: 'test' });
-      return;
-    }
-
     setIsSubmitting(true);
     setFeedback(null);
 
@@ -44,7 +39,6 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
         body: JSON.stringify({
           email: formValues.email,
           password: formValues.password,
-          ...(isSigningUp && { name: formValues.name }),
         }),
       });
       const responseText = await response.text();
@@ -88,14 +82,8 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
           <img className="auth-mark" src="/blooddonation-logo-colored.png" alt="" />
           <h1 id="auth-heading">{isSigningUp ? 'Sign up' : 'Log in'}</h1>
           <p>{isSigningUp ? 'Create an account to start saving lives.' : 'Welcome back! Please log in to continue.'}</p>
-          {isSigningUp && (
-            <>
-              <label htmlFor="signup-name">Full name</label>
-              <input id="signup-name" name="name" type="text" value={formValues.name} onChange={updateField} placeholder="Your full name" required />
-            </>
-          )}
-          <label htmlFor="login-email">Email address or username</label>
-          <input id="login-email" name="email" type="text" value={formValues.email} onChange={updateField} placeholder="you@example.com" required />
+          <label htmlFor="login-email">Email address</label>
+          <input id="login-email" name="email" type={isSigningUp ? 'email' : 'text'} value={formValues.email} onChange={updateField} placeholder="you@example.com" required />
           <label htmlFor="login-password">Password</label>
           <input id="login-password" name="password" type="password" value={formValues.password} onChange={updateField} minLength="4" required />
           {isSigningUp && (
