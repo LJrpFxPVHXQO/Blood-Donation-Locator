@@ -29,6 +29,12 @@ export default function Landingpage({ onHome, onLogin, onDashboard, isAuthentica
     };
   }, []);
 
+  const handleHome = (event) => {
+    event.preventDefault();
+    window.scrollTo(0, 0);
+    onHome();
+  };
+
   return (
     <div className="landing-site">
       <header className="landing-topbar">

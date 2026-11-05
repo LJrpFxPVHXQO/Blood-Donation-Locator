@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Plus, Save } from 'lucide-react';
 
 export default function EditProfile({ profile, onCancel, onSave }) {
-  const initials = (profile?.name || 'JD')
+  const initials = (profile?.name || profile?.email || '?')
     .split(/\s+/)
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
@@ -51,10 +51,11 @@ export default function EditProfile({ profile, onCancel, onSave }) {
               {initials}
             </div>
             <div className="profile-meta">
-              <strong className="profile-name">{profile.name}</strong>
+              {profile.name && <strong className="profile-name">{profile.name}</strong>}
               <div className="profile-line">Donor ID: {profile.donorId}</div>
-              <div className="profile-line">Blood Type: {profile.bloodType}</div>
-              <div className="profile-line">Status: {profile.status}</div>
+              <div className="profile-line">Email: {profile.email}</div>
+              {profile.bloodType && <div className="profile-line">Blood Type: {profile.bloodType}</div>}
+              {profile.hasSurvey && <div className="profile-line">Status: {profile.status}</div>}
             </div>
           </div>
           <h1 className="profile-edit-title">Edit profile</h1>

@@ -7,8 +7,21 @@ import LoginSignup from './views/LoginSignup';
 import Profile from './views/Profile';
 import { loadStoredEligibility, storeEligibility } from './services/eligibility';
 import { fetchLatestSurvey } from './services/surveyApi';
+import { fetchProfile, saveProfile } from './services/profileApi';
 
 const SESSION_KEY = 'blooddonate.session';
+
+const blankProfile = (user) => ({
+  name: '',
+  email: user?.email || '',
+  donorId: user?.id ? String(user.id).padStart(3, '0') : '',
+  hasSurvey: false,
+  bloodType: '',
+  status: 'Active',
+  phone: '',
+  address: '',
+  emergencyContacts: [],
+});
 
 const loadSessionUser = () => {
   try {
@@ -20,26 +33,31 @@ const loadSessionUser = () => {
 
 export default function App() {
   // Always start on the login screen; the landing page stays reachable from there.
-  const [currentView, setCurrentView] = useState('login');
+  const [currentView, setCurrentView] = useState('landing');
   const [authenticatedUser, setAuthenticatedUser] = useState(loadSessionUser);
   const [eligibility, setEligibility] = useState(() => loadStoredEligibility());
-  const [profileDetails, setProfileDetails] = useState({
-    name: 'John A. Doe',
-    donorId: '001',
-    dateOfBirth: '1/1/2001',
-    bloodType: 'A+',
-    status: 'Active',
-    phone: '0954778899',
-    address: '123 Street Town City',
-    emergencyContacts: [
-      {
-        id: 1,
-        name: 'Jane B. Doe',
-        phone: '09658899911',
-        relationship: 'Wife',
-      },
-    ],
-  });
+  const [profileDetails, setProfileDetails] = useState(() => blankProfile(loadSessionUser()));
+
+  // Load the logged-in user's own profile from the database.
+  // Reload when the profile opens, so a survey just submitted shows up.
+  const userId = authenticatedUser?.id;
+  const onProfileView = currentView === 'profile';
+  useEffect(() => {
+    if (!userId) {
+      return undefined;
+    }
+
+    let active = true;
+    fetchProfile(userId).then((savedProfile) => {
+      if (active && savedProfile) {
+        setProfileDetails((current) => ({ ...current, ...savedProfile }));
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [userId, onProfileView]);
 
   // The donor status follows the latest survey result.
   const profile = useMemo(
@@ -81,11 +99,24 @@ export default function App() {
   const handleNavigate = (view) => {
     if (view === 'logout') {
       setAuthenticatedUser(null);
-      setCurrentView('login');
+      setProfileDetails(blankProfile(null));
+      setCurrentView('landing');
       return;
     }
 
     setCurrentView(view);
+  };
+
+  const handleProfileSave = async (updatedProfile) => {
+    // The server is the source of truth; fall back to the local edit if it is unreachable.
+    try {
+      const savedProfile = await saveProfile(userId, updatedProfile);
+      setProfileDetails((current) => ({ ...current, ...savedProfile }));
+    } catch {
+      setProfileDetails(updatedProfile);
+    }
+
+    setCurrentView('profile');
   };
 
   const handleEligibilityChange = (result) => {
@@ -110,6 +141,7 @@ export default function App() {
         onHome={() => setCurrentView('landing')}
         onAuthenticated={(user) => {
           setAuthenticatedUser(user);
+          setProfileDetails(blankProfile(user));
           setCurrentView('home');
         }}
       />
@@ -133,10 +165,7 @@ export default function App() {
             <EditProfile
               profile={profile}
               onCancel={() => setCurrentView('profile')}
-              onSave={(updatedProfile) => {
-                setProfileDetails(updatedProfile);
-                setCurrentView('profile');
-              }}
+              onSave={handleProfileSave}
             />
           )}
           {currentView === 'eligibility' && (

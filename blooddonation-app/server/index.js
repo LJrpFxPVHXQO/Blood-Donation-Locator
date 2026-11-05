@@ -15,16 +15,18 @@ const findUserByEmail = db.prepare(
 );
 
 app.post('/api/auth/signup', async (request, response) => {
-  const name = typeof request.body.name === 'string' ? request.body.name.trim() : '';
   const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : '';
   const password = typeof request.body.password === 'string' ? request.body.password : '';
+  // Signup only asks for an email, so the display name defaults to the part before the @.
+  const providedName = typeof request.body.name === 'string' ? request.body.name.trim() : '';
+  const name = providedName || email.split('@')[0];
 
   if (!name || name.length > 100) {
     return response.status(400).json({ message: 'Enter a name between 1 and 100 characters.' });
   }
 
   if (!email || email.length > 254) {
-    return response.status(400).json({ message: 'Enter an email address or username up to 254 characters.' });
+    return response.status(400).json({ message: 'Enter an email address up to 254 characters.' });
   }
 
   if (password.length < 4 || Buffer.byteLength(password, 'utf8') > 72) {
@@ -208,6 +210,106 @@ app.get('/api/surveys', (request, response) => {
   } catch (error) {
     console.error('Unable to list survey responses:', error);
     return response.status(500).json({ message: 'Unable to list the survey responses.' });
+  }
+});
+
+// Profiles
+const findProfileUser = db.prepare(
+  'SELECT id, email, phone, address FROM users WHERE id = ? LIMIT 1',
+);
+const latestSurveyForUser = db.prepare(
+  `SELECT name, age, gender, city, occupation, contact, blood_type FROM survey_responses
+    WHERE user_id = ? ORDER BY id DESC LIMIT 1`,
+);
+const listContacts = db.prepare(
+  'SELECT id, name, phone, relationship FROM emergency_contacts WHERE user_id = ? ORDER BY id ASC',
+);
+const updateUserContact = db.prepare('UPDATE users SET phone = ?, address = ? WHERE id = ?');
+const deleteContacts = db.prepare('DELETE FROM emergency_contacts WHERE user_id = ?');
+const insertContact = db.prepare(
+  'INSERT INTO emergency_contacts (user_id, name, phone, relationship) VALUES (?, ?, ?, ?)',
+);
+
+// A fresh account only has an ID and an email; the rest fills in from the donor survey.
+const readProfile = (userId) => {
+  const user = findProfileUser.get(userId);
+  if (!user) {
+    return null;
+  }
+
+  const survey = latestSurveyForUser.get(userId);
+
+  return {
+    id: user.id,
+    email: user.email,
+    donorId: String(user.id).padStart(3, '0'),
+    hasSurvey: Boolean(survey),
+    name: survey?.name || '',
+    age: survey?.age ?? null,
+    gender: survey?.gender || '',
+    city: survey?.city || '',
+    occupation: survey?.occupation || '',
+    bloodType: survey?.blood_type || '',
+    phone: user.phone || survey?.contact || '',
+    address: user.address || '',
+    emergencyContacts: listContacts.all(userId).map((contact) => ({
+      id: contact.id,
+      name: contact.name,
+      phone: contact.phone,
+      relationship: contact.relationship || '',
+    })),
+  };
+};
+
+app.get('/api/profile/:id', (request, response) => {
+  const userId = toUserId(request.params.id);
+  const profile = userId ? readProfile(userId) : null;
+
+  if (!profile) {
+    return response.status(404).json({ message: 'Profile not found.' });
+  }
+
+  return response.json({ profile });
+});
+
+app.put('/api/profile/:id', (request, response) => {
+  const userId = toUserId(request.params.id);
+
+  if (!userId || !findProfileUser.get(userId)) {
+    return response.status(404).json({ message: 'Profile not found.' });
+  }
+
+  const contacts = Array.isArray(request.body?.emergencyContacts) ? request.body.emergencyContacts : [];
+  const cleanedContacts = contacts
+    .map((contact) => ({
+      name: cleanText(contact?.name, 100),
+      phone: cleanText(contact?.phone, 40),
+      relationship: cleanText(contact?.relationship, 60),
+    }))
+    .filter((contact) => contact.name && contact.phone);
+
+  try {
+    db.exec('BEGIN');
+    try {
+      updateUserContact.run(
+        cleanText(request.body?.phone, 40),
+        cleanText(request.body?.address, 255),
+        userId,
+      );
+      deleteContacts.run(userId);
+      cleanedContacts.forEach((contact) => {
+        insertContact.run(userId, contact.name, contact.phone, contact.relationship);
+      });
+      db.exec('COMMIT');
+    } catch (error) {
+      db.exec('ROLLBACK');
+      throw error;
+    }
+
+    return response.json({ message: 'Profile saved.', profile: readProfile(userId) });
+  } catch (error) {
+    console.error('Unable to save the profile:', error);
+    return response.status(500).json({ message: 'Unable to save your profile.' });
   }
 });
 
