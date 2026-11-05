@@ -2,10 +2,10 @@
 // proxies them to http://127.0.0.1:3002; set VITE_TRACKING_API_BASE to call it directly.
 const API_BASE = import.meta.env.VITE_TRACKING_API_BASE || '';
 
-async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+async function request(path, options = {}, useTrackingApiBase = true) {
+  const response = await fetch(`${useTrackingApiBase ? API_BASE : ''}${path}`, {
     ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
   });
 
   const contentType = response.headers.get('content-type') || '';
@@ -28,11 +28,12 @@ export function fetchBloodCenterInventory(centerId) {
   return request(`/api/blood-centers/${centerId}/inventory`);
 }
 
-export function createBloodCenter(center) {
-  return request('/api/blood-centers', {
+export function createBloodCenter(center, adminToken) {
+  return request('/api/admin/blood-centers', {
     method: 'POST',
+    headers: { Authorization: `Bearer ${adminToken}` },
     body: JSON.stringify(center),
-  });
+  }, false);
 }
 
 export function updateBloodInventory(inventory) {

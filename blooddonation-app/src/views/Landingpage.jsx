@@ -15,7 +15,7 @@ const processSteps = [
   },
 ];
 
-export default function Landingpage({ onHome, onLogin, onDashboard, isAuthenticated }) {
+export default function Landingpage({ onHome, onLogin, onDashboard, onFindCenter, isAuthenticated }) {
   useLayoutEffect(() => {
     const previousScrollRestoration = window.history.scrollRestoration;
     const resetScroll = () => window.scrollTo(0, 0);
@@ -35,6 +35,17 @@ export default function Landingpage({ onHome, onLogin, onDashboard, isAuthentica
     onHome();
   };
 
+  const handleProtected = (destination) => (event) => {
+    event.preventDefault();
+    if (!isAuthenticated) {
+      onLogin();
+    } else if (destination === 'locator') {
+      onFindCenter();
+    } else {
+      onDashboard();
+    }
+  };
+
   return (
     <div className="landing-site">
       <header className="landing-topbar">
@@ -43,9 +54,8 @@ export default function Landingpage({ onHome, onLogin, onDashboard, isAuthentica
         </a>
         <nav className="landing-navigation" aria-label="Main navigation">
           <a href="#home" onClick={handleHome} aria-current="page">Home</a>
-          <span>Donate</span>
-          <span>Find Center</span>
-          <span>About</span>
+          <a href="#donate" onClick={handleProtected('dashboard')}>Donate</a>
+          <a href="#find-center" onClick={handleProtected('locator')}>Find Center</a>
           {isAuthenticated ? (
             <button type="button" onClick={onDashboard}>Dashboard</button>
           ) : (
@@ -61,10 +71,6 @@ export default function Landingpage({ onHome, onLogin, onDashboard, isAuthentica
             <p className="landing-hero-description">
               Join thousands of donors making a difference in your community. Your donation can save up to 3 lives.
             </p>
-            <div className="landing-hero-actions">
-              <button className="landing-button landing-button-primary" type="button">Schedule donation</button>
-              <button className="landing-button landing-button-outline" type="button">Learn more</button>
-            </div>
           </div>
           <div className="landing-hero-art" aria-label="BloodDonate logo">
             <div className="landing-hero-logo">
@@ -102,27 +108,6 @@ export default function Landingpage({ onHome, onLogin, onDashboard, isAuthentica
           </div>
         </section>
 
-        <section className="landing-requests" aria-labelledby="urgent-requests">
-          <div className="landing-requests-heading">
-            <div>
-              <h2 id="urgent-requests">Urgent blood requests</h2>
-              <p>Critical blood types needed now in your area</p>
-            </div>
-            <span>View all &rarr;</span>
-          </div>
-          <div className="landing-empty-requests" aria-label="No urgent blood requests" />
-        </section>
-
-        <section className="landing-centers" id="donation-centers">
-          <div className="landing-center-copy">
-            <h2>Find a donation center near you</h2>
-            <p>Locate the nearest blood donation center and schedule your visit.</p>
-            <div className="landing-location-form">
-              <input id="landing-location" type="text" placeholder="Enter your location" />
-              <button type="button">Find donation center</button>
-            </div>
-          </div>
-        </section>
       </main>
 
       <footer className="landing-footer">
@@ -131,9 +116,7 @@ export default function Landingpage({ onHome, onLogin, onDashboard, isAuthentica
         </a>
         <p>Saving lives through blood donation.</p>
         <div className="landing-footer-links">
-          <span>Resources</span>
-          <span>Support</span>
-          <span>Connect</span>
+          <span>Having trouble with the site? Message <a href="mailto:blooddonate@gmail.com">blooddonate@gmail.com</a></span>
         </div>
       </footer>
     </div>
