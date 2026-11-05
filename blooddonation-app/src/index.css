@@ -2129,6 +2129,91 @@ select {
   text-transform: uppercase;
 }
 
+.locator-admin-form {
+  display: grid;
+  gap: 0.85rem;
+  margin: 0 0 1rem;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 0.45rem;
+  background: rgba(70, 0, 0, 0.25);
+}
+
+.locator-admin-form h2 {
+  margin: 0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+}
+
+.locator-admin-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.locator-admin-grid label {
+  display: grid;
+  gap: 0.3rem;
+  color: white;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.locator-admin-grid input,
+.locator-admin-grid select {
+  width: 100%;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.55rem;
+  border: 1px solid #e8caca;
+  border-radius: 0.25rem;
+  background: white;
+  color: #211717;
+  font: inherit;
+  font-size: 0.7rem;
+}
+
+.locator-admin-grid input:focus-visible,
+.locator-admin-grid select:focus-visible {
+  outline: 2px solid #ffcdd2;
+  outline-offset: 2px;
+}
+
+.locator-admin-wide {
+  grid-column: 1 / -1;
+}
+
+.locator-admin-submit {
+  justify-self: start;
+  min-height: 2.2rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid #6d0808;
+  border-radius: 0.25rem;
+  background: white;
+  color: #76090d;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.locator-admin-submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.locator-admin-feedback {
+  margin: 0;
+  font-size: 0.7rem;
+}
+
+.locator-admin-feedback.is-success {
+  color: #d2f5dd;
+}
+
+.locator-admin-feedback.is-error {
+  color: #ffd8d8;
+}
+
 .locator-city-list {
   display: grid;
   gap: 0.42rem;
@@ -2193,6 +2278,8 @@ select {
   .locator-page { min-height: calc(100vh - 8rem); padding-inline: 0.8rem; }
   .locator-panel { min-height: 19rem; padding: 1.3rem 1rem 1.6rem; }
   .locator-city-select { min-height: 2rem; }
+  .locator-admin-grid { grid-template-columns: minmax(0, 1fr); }
+  .locator-admin-wide { grid-column: auto; }
 }
 
 .locator-shell .section-nav { position: fixed; right: 0; bottom: 0; left: 0; z-index: 100; }

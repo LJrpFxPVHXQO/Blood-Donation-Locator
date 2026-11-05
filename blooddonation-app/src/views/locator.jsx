@@ -1,10 +1,22 @@
 ﻿import { useEffect, useState } from 'react';
-import { fetchBloodCenters, fetchBloodCenterInventory } from '../services/bloodCenterService';
 import { ChevronDown } from 'lucide-react';
+import {
+  createBloodCenter,
+  fetchBloodCenters,
+  fetchBloodCenterInventory,
+} from '../services/bloodCenterService';
 
 const bloodTypes = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+const emptyCenter = {
+  name: '',
+  city: '',
+  address: '',
+  contact: '',
+  status: 'open',
+  operating_hours: '',
+};
 
-export default function Locator() {
+export default function Locator({ isAdmin = false, adminToken }) {
   const region = 'National Capital Region';
   const [centers, setCenters] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,6 +24,9 @@ export default function Locator() {
   const [expandedId, setExpandedId] = useState(null);
   const [inventoryById, setInventoryById] = useState({});
   const [inventoryLoading, setInventoryLoading] = useState({});
+  const [newCenter, setNewCenter] = useState(emptyCenter);
+  const [isCreatingCenter, setIsCreatingCenter] = useState(false);
+  const [createFeedback, setCreateFeedback] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -60,6 +75,23 @@ export default function Locator() {
     }
   }
 
+  async function submitNewCenter(event) {
+    event.preventDefault();
+    setIsCreatingCenter(true);
+    setCreateFeedback(null);
+    try {
+      await createBloodCenter(newCenter, adminToken);
+      const updatedCenters = await fetchBloodCenters();
+      setCenters(updatedCenters);
+      setNewCenter(emptyCenter);
+      setCreateFeedback({ type: 'success', message: 'Blood center location added.' });
+    } catch (err) {
+      setCreateFeedback({ type: 'error', message: err.message || 'Unable to add this location.' });
+    } finally {
+      setIsCreatingCenter(false);
+    }
+  }
+
   function getStockStatus(units, threshold) {
     if (units <= 0) {
       return { label: 'Out of stock', tone: 'critical' };
@@ -80,6 +112,75 @@ export default function Locator() {
         <p style={{ margin: '0 0 16px', color: '#6b7280', fontSize: '14px' }}>
           Real-time blood stock availability per center
         </p>
+        {isAdmin && (
+          <form className="locator-admin-form" onSubmit={submitNewCenter}>
+            <h2>Add a blood center location</h2>
+            <div className="locator-admin-grid">
+              <label>
+                Center name
+                <input
+                  value={newCenter.name}
+                  onChange={(event) => setNewCenter((current) => ({ ...current, name: event.target.value }))}
+                  maxLength="150"
+                  required
+                />
+              </label>
+              <label>
+                City
+                <input
+                  value={newCenter.city}
+                  onChange={(event) => setNewCenter((current) => ({ ...current, city: event.target.value }))}
+                  maxLength="120"
+                  required
+                />
+              </label>
+              <label className="locator-admin-wide">
+                Street address
+                <input
+                  value={newCenter.address}
+                  onChange={(event) => setNewCenter((current) => ({ ...current, address: event.target.value }))}
+                  maxLength="255"
+                />
+              </label>
+              <label>
+                Contact number
+                <input
+                  value={newCenter.contact}
+                  onChange={(event) => setNewCenter((current) => ({ ...current, contact: event.target.value }))}
+                  maxLength="60"
+                />
+              </label>
+              <label>
+                Operating hours
+                <input
+                  value={newCenter.operating_hours}
+                  onChange={(event) => setNewCenter((current) => ({ ...current, operating_hours: event.target.value }))}
+                  placeholder="e.g. Mon–Fri, 8 AM–5 PM"
+                  maxLength="100"
+                />
+              </label>
+              <label>
+                Status
+                <select
+                  value={newCenter.status}
+                  onChange={(event) => setNewCenter((current) => ({ ...current, status: event.target.value }))}
+                >
+                  <option value="open">Open</option>
+                  <option value="temporarily closed">Temporarily closed</option>
+                  <option value="closed">Closed</option>
+                </select>
+              </label>
+            </div>
+            {createFeedback && (
+              <p className={`locator-admin-feedback is-${createFeedback.type}`} role="status">
+                {createFeedback.message}
+              </p>
+            )}
+            <button className="locator-admin-submit" type="submit" disabled={isCreatingCenter}>
+              {isCreatingCenter ? 'Adding location…' : 'Add location'}
+            </button>
+          </form>
+        )}
         {loading && <p style={{ margin: 0, color: '#6b7280' }}>Loading centers...</p>}
         {error && <p style={{ margin: 0, color: '#dc2626' }}>{error}</p>}
         <div className="locator-city-list">

@@ -23,7 +23,7 @@ const hasStoredSurveyCompletion = (userKey) => {
 };
 
 const blankProfile = (user) => ({
-  name: '',
+  name: user?.name || '',
   email: user?.email || '',
   donorId: user?.id ? String(user.id).padStart(3, '0') : '',
   hasSurvey: false,
@@ -232,6 +232,8 @@ export default function App() {
           onSurveyComplete={handleSurveyComplete}
           onContinueToFeature={continueToRestrictedView}
           onDeferRequiredFeature={deferRestrictedView}
+          isAdmin={authenticatedUser?.role === 'admin'}
+          adminToken={authenticatedUser?.adminToken}
         >
           {currentView === 'profile' && (
             <Profile profile={profile} onEdit={() => handleNavigate('edit-profile')} />

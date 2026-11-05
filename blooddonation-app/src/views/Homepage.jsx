@@ -24,6 +24,8 @@ export default function Homepage({
   onSurveyComplete,
   onContinueToFeature,
   onDeferRequiredFeature,
+  isAdmin = false,
+  adminToken,
   children,
 }) {
   const isHelpSection = currentView === 'help' || currentView === 'survey';
@@ -59,7 +61,7 @@ export default function Homepage({
     { label: 'Profile', view: 'profile' },
     { label: 'Condition to donate', view: 'survey' },
     { label: 'Donation eligibility', view: 'eligibility' },
-    { label: 'Donation locations', view: 'locator' },
+    { label: isAdmin ? 'Manage blood centers' : 'Donation locations', view: 'locator' },
     { label: 'FAQ', view: 'help' },
     { label: 'Settings', view: 'profile' },
     { label: 'Emergency requests', view: 'emergency' },
@@ -248,7 +250,7 @@ export default function Homepage({
       )}
 
       <main className={isHelpSection ? 'help-main' : 'homepage-main'}>
-        {isProfileSection || isEligibilitySection ? children : currentView === 'locator' ? <Locator /> : currentView === 'emergency' ? (
+        {isProfileSection || isEligibilitySection ? children : currentView === 'locator' ? <Locator isAdmin={isAdmin} adminToken={adminToken} /> : currentView === 'emergency' ? (
           <Emergency />
         ) : (
           <>

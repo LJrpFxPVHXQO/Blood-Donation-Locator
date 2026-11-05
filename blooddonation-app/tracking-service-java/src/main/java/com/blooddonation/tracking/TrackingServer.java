@@ -11,9 +11,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.URLDecoder;
+import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -155,6 +157,7 @@ public final class TrackingServer {
       }
 
       if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {
+        requireAdmin(exchange);
         Map<String, Object> body = readObjectBody(exchange);
         String name = requireText(body, "name", 150, "Name is required.");
         String city = requireText(body, "city", 120, "City is required.");
@@ -230,6 +233,7 @@ public final class TrackingServer {
         return;
       }
 
+      requireAdmin(exchange);
       Map<String, Object> body = readObjectBody(exchange);
       long centerId = requireLong(body, "center_id", "A valid center_id is required.");
       String bloodType = requireText(body, "blood_type", 10, "blood_type is required.");
@@ -256,6 +260,23 @@ public final class TrackingServer {
         sendJson(exchange, 200, payload);
       } catch (BloodCenterRepository.CenterNotFoundException error) {
         sendError(exchange, 404, error.getMessage());
+      }
+    }
+
+    private void requireAdmin(HttpExchange exchange) {
+      String expected;
+      try {
+        Path tokenFile = Paths.get(readEnv("TRACKING_ADMIN_TOKEN_FILE", "data/.admin-api-token"));
+        expected = new String(Files.readAllBytes(tokenFile), StandardCharsets.UTF_8).trim();
+      } catch (IOException error) {
+        expected = "";
+      }
+      String provided = exchange.getRequestHeaders().getFirst("X-Tracking-Admin-Token");
+      if (expected.isEmpty() || provided == null
+          || !MessageDigest.isEqual(
+              expected.getBytes(StandardCharsets.UTF_8),
+              provided.getBytes(StandardCharsets.UTF_8))) {
+        throw new ApiException(403, "Admin authorization is required.");
       }
     }
 

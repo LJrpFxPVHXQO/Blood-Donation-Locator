@@ -1,11 +1,59 @@
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import express from 'express';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import db from './db.js';
 import { evaluateEligibility } from '../src/services/eligibility.js';
 
 const app = express();
 const port = Number(process.env.PORT || 3001);
+const adminUsername = process.env.ADMIN_USERNAME || 'admin';
+const adminPassword = process.env.ADMIN_PASSWORD || '123';
+const trackingServiceDirectory = resolve(dirname(fileURLToPath(import.meta.url)), '../tracking-service-java');
+const trackingTokenPath = resolve(
+  trackingServiceDirectory,
+  process.env.TRACKING_ADMIN_TOKEN_FILE || 'data/.admin-api-token',
+);
+mkdirSync(dirname(trackingTokenPath), { recursive: true });
+let trackingAdminToken;
+try {
+  trackingAdminToken = readFileSync(trackingTokenPath, 'utf8').trim();
+} catch {
+  trackingAdminToken = randomBytes(32).toString('hex');
+  try {
+    writeFileSync(trackingTokenPath, trackingAdminToken, { flag: 'wx', mode: 0o600 });
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    trackingAdminToken = readFileSync(trackingTokenPath, 'utf8').trim();
+  }
+}
+const adminSessionLifetimeMs = 12 * 60 * 60 * 1000;
+const createAdminSessionToken = () => {
+  const payload = Buffer.from(JSON.stringify({ expiresAt: Date.now() + adminSessionLifetimeMs }))
+    .toString('base64url');
+  const signature = createHmac('sha256', trackingAdminToken).update(payload).digest('base64url');
+  return `${payload}.${signature}`;
+};
+const isValidAdminSession = (token) => {
+  const [payload, signature, extra] = token.split('.');
+  if (!payload || !signature || extra) return false;
+
+  const expected = createHmac('sha256', trackingAdminToken).update(payload).digest('base64url');
+  const providedBytes = Buffer.from(signature);
+  const expectedBytes = Buffer.from(expected);
+  if (providedBytes.length !== expectedBytes.length || !timingSafeEqual(providedBytes, expectedBytes)) {
+    return false;
+  }
+
+  try {
+    return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')).expiresAt > Date.now();
+  } catch {
+    return false;
+  }
+};
 
 app.use(express.json());
 
@@ -48,11 +96,21 @@ app.post('/api/auth/signup', async (request, response) => {
 });
 
 app.post('/api/auth/login', async (request, response) => {
-  const email = typeof request.body.email === 'string' ? request.body.email.trim().toLowerCase() : '';
+  const email = typeof (request.body.username ?? request.body.email) === 'string'
+    ? String(request.body.username ?? request.body.email).trim().toLowerCase()
+    : '';
   const password = typeof request.body.password === 'string' ? request.body.password : '';
 
   if (!email || !password) {
     return response.status(400).json({ message: 'Enter your email address or username and password.' });
+  }
+
+  if (email === adminUsername.toLowerCase() && password === adminPassword) {
+    const token = createAdminSessionToken();
+    return response.json({
+      message: 'Admin login successful.',
+      user: { id: null, name: 'Administrator', username: adminUsername, role: 'admin', adminToken: token },
+    });
   }
 
   try {
@@ -69,6 +127,31 @@ app.post('/api/auth/login', async (request, response) => {
   } catch (error) {
     console.error('Unable to log in user:', error);
     return response.status(500).json({ message: 'Unable to log in. Please try again.' });
+  }
+});
+
+app.post('/api/admin/blood-centers', async (request, response) => {
+  const authorization = request.get('authorization') || '';
+  const token = authorization.startsWith('Bearer ') ? authorization.slice(7) : '';
+
+  if (!isValidAdminSession(token)) {
+    return response.status(403).json({ message: 'An active admin login is required to add a location.' });
+  }
+
+  try {
+    const upstream = await fetch(`${process.env.TRACKING_API_URL || 'http://127.0.0.1:3002'}/api/blood-centers`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tracking-Admin-Token': trackingAdminToken,
+      },
+      body: JSON.stringify(request.body || {}),
+    });
+    const payload = await upstream.json().catch(() => ({}));
+    return response.status(upstream.status).json(payload);
+  } catch (error) {
+    console.error('Unable to reach the blood tracking service:', error);
+    return response.status(502).json({ message: 'Unable to reach the blood center service. Please try again.' });
   }
 });
 

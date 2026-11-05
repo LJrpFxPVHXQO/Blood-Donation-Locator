@@ -37,7 +37,7 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formValues.email,
+          ...(isSigningUp ? { email: formValues.email } : { username: formValues.email }),
           password: formValues.password,
         }),
       });
@@ -53,7 +53,7 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
       }
 
       if (!response.ok) {
-        throw new Error(responseBody.message || `Unable to create your account (status ${response.status}).`);
+        throw new Error(responseBody.message || `${isSigningUp ? 'Unable to create your account' : 'Unable to log in'} (status ${response.status}).`);
       }
 
       setFeedback({ type: 'success', message: responseBody.message || 'Account created. You can now log in.' });
@@ -64,7 +64,7 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
     } catch (error) {
       setFeedback({
         type: 'error',
-        message: error instanceof Error ? error.message : 'Unable to create your account.',
+        message: error instanceof Error ? error.message : isSigningUp ? 'Unable to create your account.' : 'Unable to log in.',
       });
     } finally {
       setIsSubmitting(false);
@@ -82,10 +82,10 @@ export default function LoginSignup({ onHome, onAuthenticated }) {
           <img className="auth-mark" src="/blooddonation-logo-colored.png" alt="" />
           <h1 id="auth-heading">{isSigningUp ? 'Sign up' : 'Log in'}</h1>
           <p>{isSigningUp ? 'Create an account to start saving lives.' : 'Welcome back! Please log in to continue.'}</p>
-          <label htmlFor="login-email">Email address</label>
-          <input id="login-email" name="email" type={isSigningUp ? 'email' : 'text'} value={formValues.email} onChange={updateField} placeholder="you@example.com" required />
+          <label htmlFor="login-email">{isSigningUp ? 'Email address' : 'Email or admin username'}</label>
+          <input id="login-email" name="email" type={isSigningUp ? 'email' : 'text'} value={formValues.email} onChange={updateField} placeholder={isSigningUp ? 'you@example.com' : 'Email or admin'} required />
           <label htmlFor="login-password">Password</label>
-          <input id="login-password" name="password" type="password" value={formValues.password} onChange={updateField} minLength="4" required />
+          <input id="login-password" name="password" type="password" value={formValues.password} onChange={updateField} minLength={isSigningUp ? 4 : undefined} required />
           {isSigningUp && (
             <>
               <label htmlFor="confirm-password">Confirm password</label>
