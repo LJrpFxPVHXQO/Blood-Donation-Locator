@@ -116,9 +116,7 @@ export default function Landingpage({ onHome, onLogin, onDashboard, onFindCenter
         </a>
         <p>Saving lives through blood donation.</p>
         <div className="landing-footer-links">
-          <span>Resources</span>
-          <span>Support</span>
-          <span>Connect</span>
+          <span>Having trouble with the site? Message <a href="mailto:blooddonate@gmail.com">blooddonate@gmail.com</a></span>
         </div>
       </footer>
     </div>

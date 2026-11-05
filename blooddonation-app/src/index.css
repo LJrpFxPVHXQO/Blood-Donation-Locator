@@ -470,6 +470,11 @@ body {
   font-weight: 700;
 }
 
+.landing-footer-links a {
+  color: inherit;
+  text-decoration: underline;
+}
+
 @media (max-width: 640px) {
   .landing-topbar {
     align-items: flex-start;
