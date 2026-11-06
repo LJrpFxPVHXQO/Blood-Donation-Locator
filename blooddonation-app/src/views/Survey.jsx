@@ -454,8 +454,10 @@ export default function Survey({
         role="status"
         aria-live="polite"
       >
-        <span className="eligibility-preview-label">        Donation eligibility</span>{' '}
-        <strong className="eligibility-preview-value">{preview.label}</strong>
+        <div className="eligibility-preview-row">
+                  <span className="eligibility-preview-label">Donation eligibility</span>
+                  <strong className="eligibility-preview-value">{preview.label}</strong>
+                </div>
         <p className="eligibility-preview-text">{preview.detail}</p>
       </div>
 
