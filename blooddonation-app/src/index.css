@@ -1525,6 +1525,7 @@ select {
 
 .survey-field {
   display: grid;
+  align-content: start;
   gap: 0.3rem;
   min-width: 0;
   margin: 0;
@@ -1655,6 +1656,10 @@ select {
   flex-wrap: wrap;
   gap: 0.6rem;
   align-items: center;
+}
+
+.eligibility-result + .survey-actions {
+  margin-top: 1.5rem;
 }
 
 .survey-back {
@@ -2843,3 +2848,17 @@ select {
   line-height: 1.45;
   color: #444;
 }
+
+
+.survey-feedback {
+  margin: 0.2rem 0 0;
+  padding: 0.45rem 0.7rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border-left: 3px solid #ffd180;
+  color: #fff;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.survey-feedback-blocker { border-left-color: #ff8a80; }
